@@ -22,7 +22,7 @@ public class DanielBlue extends LinearOpMode{
 
     Servo Joint1;
     Servo Joint2;
-    Servo
+    Servo Carriage;
 
     double power = 0.5; //Power Coefficient determines power to the wheel motors of robot
     boolean turboMode = false; //Turbomode puts the robot at 100% power in the wheel motors
