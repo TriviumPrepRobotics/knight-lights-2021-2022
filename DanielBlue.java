@@ -20,7 +20,7 @@ public class DanielBlue extends LinearOpMode{
     DcMotor Pulley;
     DcMotor Arm;
 
-    Servo Base;
+    Servo Door;
     Servo Joint;
     Servo Carriage;
 
@@ -30,7 +30,7 @@ public class DanielBlue extends LinearOpMode{
     boolean intakeOn = false;
     boolean pulleyUp = false;
     boolean duckOn = false;
-    boolean armUp = false;
+    boolean doorOpen = false;
 
     double leftTriggerStartTime = 0;
     double leftBumperStartTime = 0;
@@ -56,16 +56,16 @@ public class DanielBlue extends LinearOpMode{
         Pulley = hardwareMap.dcMotor.get("Pulley");
         Arm = hardwareMap.dcMotor.get("Arm");
 
-        Base = hardwareMap.servo.get("Base");
         Joint = hardwareMap.servo.get("Joint");
         Carriage = hardwareMap.servo.get("Carriage");
+        Door = hardwareMap.servo.get("Door");
 
         //Initialization Movement
         pulleySwitch(); //Lifts Intake
         pulleyUp = false; //Resets Intake Variable
-        Base.setPosition(0.69); //Sets Base Servo Position
-        Joint.setPosition(0.1); //Sets Joint Servo Position
-        Carriage.setPosition(0.5); //Sets Carriage Servo Position
+        Joint.setPosition(0.69); //Sets Joint Servo Position
+        Carriage.setPosition(0.1); //Sets Carriage Servo Position
+        Door.setPosition(0.5); //Sets Door Servo Position
 
         Pulley.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE); //Sets Pulley to ZeroPowerBehavior
         Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE); //Sets Arm to ZeroPowerBehavior
@@ -100,34 +100,42 @@ public class DanielBlue extends LinearOpMode{
         }
 
         //Intake On/Off
-        if (gamepad1.left_bumper && leftBumperCheck()) {
+        if (gamepad1.left_bumper && leftBumperCooldown()) {
             intakeSwitch();
         }
 
         //Pulley Up/Down
-        if (gamepad1.left_trigger > 0.5 && leftTriggerCheck()) {
+        if (gamepad1.left_trigger > 0.5 && leftTriggerCooldown()) {
             pulleySwitch();
         }
 
         //Duck Wheel On/Off
-        if (gamepad1.b && bCheck()) {
+        if (gamepad1.b && bCooldown()) {
             duckSwitch();
         }
 
         //Move Arm to Position 1
-        if (gamepad1.y && yCheck()) {
-
+        if (gamepad1.y && yCooldown()) {
+            armMoveMid();
         }
 
         //Move Arm to Position 2
-        if (gamepad1.a && aCheck()) {
+        if (gamepad1.a && aCooldown()) {
+            armMoveShort();
+        }
 
+        if(gamepad1.x && xCooldown()) {
+            armCollapse();
+        }
+
+        if(gamepad1.right_bumper && rightBumperCooldown()) {
+            doorSwitch();
         }
 
     }
 
     //Input Cooldowns
-    public boolean leftTriggerCheck() {
+    public boolean leftTriggerCooldown() {
         if(getRuntime() - leftTriggerStartTime > 0.25) { //Must wait 250 milliseconds before input can be used again
             leftTriggerStartTime = getRuntime();
             return true;
@@ -135,7 +143,7 @@ public class DanielBlue extends LinearOpMode{
         return false;
     }
 
-    public boolean leftBumperCheck() {
+    public boolean leftBumperCooldown() {
         if(getRuntime() - leftBumperStartTime > 0.25) { //Must wait 250 milliseconds before input can be used again
             leftBumperStartTime = getRuntime();
             return true;
@@ -143,7 +151,7 @@ public class DanielBlue extends LinearOpMode{
         return false;
     }
 
-    public boolean rightTriggerCheck() {
+    public boolean rightTriggerCooldown() {
         if(getRuntime() - rightTriggerStartTime > 0.25) { //Must wait 250 milliseconds before input can be used again
             rightTriggerStartTime = getRuntime();
             return true;
@@ -151,7 +159,7 @@ public class DanielBlue extends LinearOpMode{
         return false;
     }
 
-    public boolean rightBumperCheck() {
+    public boolean rightBumperCooldown() {
         if(getRuntime() - rightBumperStartTime > 0.25) { //Must wait 250 milliseconds before input can be used again
             rightBumperStartTime = getRuntime();
             return true;
@@ -159,7 +167,15 @@ public class DanielBlue extends LinearOpMode{
         return false;
     }
 
-    public boolean bCheck() {
+    public boolean xCooldown() {
+        if(getRuntime() - xStartTime > .25) { //Must wait 250 milliseconds before input can be used again
+            xStartTime = getRuntime();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean bCooldown() {
         if(getRuntime() - bStartTime > .25) { //Must wait 250 milliseconds before input can be used again
             bStartTime = getRuntime();
             return true;
@@ -167,7 +183,7 @@ public class DanielBlue extends LinearOpMode{
         return false;
     }
 
-    public boolean yCheck() {
+    public boolean yCooldown() {
         if(getRuntime() - yStartTime > .25) { //Must wait 250 milliseconds before input can be used again
             yStartTime = getRuntime();
             return true;
@@ -175,12 +191,17 @@ public class DanielBlue extends LinearOpMode{
         return false;
     }
 
-    public boolean aCheck() {
+    public boolean aCooldown() {
         if(getRuntime() - aStartTime > .25) { //Must wait 250 milliseconds before input can be used again
             aStartTime = getRuntime();
             return true;
         }
         return false;
+    }
+
+    //Hold Check Methods
+    public boolean holdCheck() {
+        return true;
     }
 
     //System Methods
@@ -227,13 +248,95 @@ public class DanielBlue extends LinearOpMode{
         }
     }
 
-    public void armSwitch() {
-        armUp = !armUp;
-        if(armUp = true) {
-            //Write Arm Extension Commands
+    public void doorSwitch() {
+        doorOpen = !doorOpen;
+        if(doorOpen = true) {
+            Door.setPosition(0);
         } else {
-            //Reverse Arm Extension Commands
+            Door.setPosition(0.5);
         }
+    }
+
+    public void armCollapse() {
+        //get Encoder Target
+        int encoderArmTarget = -(Arm.getCurrentPosition());
+
+        Joint.setPosition(0.69); //Joint Servo is at 0.69
+        Carriage.setPosition(0.1); //Carriage Servo is at 0.1
+
+        Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Arm.setTargetPosition(encoderArmTarget); //Arm Encoder is at the horizontal
+        Arm.setPower(1);
+        Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while (Arm.isBusy()) {
+            defaultMode();
+        }
+        Arm.setPower(0);
+        Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
+    public void armMoveShort() {
+        //Get Encoder Target
+        int encoderArmTarget = -(Arm.getCurrentPosition());
+
+        Joint.setPosition(0.05); //Joint Servo is at 0.05
+        Carriage.setPosition(0.1); //Carriage Servo is at 0.1
+
+        Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Arm.setTargetPosition(encoderArmTarget); //Arm Encoder is 45 degrees above horizontal (encoder ticks)
+        Arm.setPower(1);
+        Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while (Arm.isBusy()) {
+            defaultMode();
+        }
+        Arm.setPower(0);
+        Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
+    public void armMoveMid() {
+        //Get Encoder Target
+        int encoderArmTarget = 0;
+        if(Arm.getCurrentPosition() > 100) {
+            encoderArmTarget = 100 - Arm.getCurrentPosition();
+        } else if (Arm.getCurrentPosition() < 100) {
+            encoderArmTarget = -(Arm.getCurrentPosition() - 100);
+        }
+
+        Joint.setPosition(0.02); //Joint Servo is at 0
+        Carriage.setPosition(0.05); //Carriage Servo is at 0.05
+
+        Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Arm.setTargetPosition(encoderArmTarget); //Arm Encoder is 18 degrees above horizontal (encoder ticks)
+        Arm.setPower(1);
+        Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while (Arm.isBusy()) {
+            defaultMode();
+        }
+        Arm.setPower(0);
+        Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
+    public void armMoveHigh() {
+        //Get Encoder Target
+        int encoderArmTarget = 0;
+        if(Arm.getCurrentPosition() > 250) {
+            encoderArmTarget = 250 - Arm.getCurrentPosition();
+        } else if (Arm.getCurrentPosition() < 100) {
+            encoderArmTarget = -(Arm.getCurrentPosition() - 250);
+        }
+
+        Joint.setPosition(0.02); //Joint Servo is at 0
+        Carriage.setPosition(0.02); //Carriage Servo is at 0
+
+        Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Arm.setTargetPosition(encoderArmTarget); //Arm Encoder is 45 degrees above horizontal (encoder ticks)
+        Arm.setPower(1);
+        Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while (Arm.isBusy()) {
+            defaultMode();
+        }
+        Arm.setPower(0);
+        Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
 }
