@@ -48,8 +48,8 @@ public class DanielBlue extends LinearOpMode{
         BackLeft = hardwareMap.dcMotor.get("Back Left");
         BackRight = hardwareMap.dcMotor.get("Back Right");
 
-        FrontLeft.setDirection(DcMotor.Direction.REVERSE);
-        BackRight.setDirection(DcMotor.Direction.REVERSE);
+        FrontRight.setDirection(DcMotor.Direction.REVERSE);
+        BackLeft.setDirection(DcMotor.Direction.REVERSE);
 
         Duck = hardwareMap.dcMotor.get("Duck");
         Intake = hardwareMap.dcMotor.get("Intake");
@@ -75,6 +75,7 @@ public class DanielBlue extends LinearOpMode{
         while (opModeIsActive()) {
             defaultMode();
             telemetry.addData("Runtime: ", getRuntime());
+            telemetry.addData("Pulley Boolean: ", pulleyUp);
             telemetry.update();
         }
     }
@@ -197,8 +198,8 @@ public class DanielBlue extends LinearOpMode{
             Pulley.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         } else {
             Pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            Pulley.setTargetPosition(376);
-            Pulley.setPower(-1);
+            Pulley.setTargetPosition(-376);
+            Pulley.setPower(1);
             Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             while (Pulley.isBusy()) {
                 defaultMode();
