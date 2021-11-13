@@ -60,6 +60,9 @@ public class DanielBlue extends LinearOpMode{
         Joint = hardwareMap.servo.get("Joint");
         Carriage = hardwareMap.servo.get("Carriage");
 
+        //Initialization Movement
+        pulleySwitch(); //Lifts Intake
+
         waitForStart();
 
         while (opModeIsActive()) {
