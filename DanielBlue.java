@@ -20,8 +20,8 @@ public class DanielBlue extends LinearOpMode{
     DcMotor Pulley;
     DcMotor Arm;
 
-    Servo Joint1;
-    Servo Joint2;
+    Servo Base;
+    Servo Joint;
     Servo Carriage;
 
     double power = 0.5; //Power Coefficient determines power to the wheel motors of robot
@@ -30,6 +30,7 @@ public class DanielBlue extends LinearOpMode{
     boolean intakeOn = false;
     boolean pulleyUp = false;
     boolean duckOn = false;
+    boolean armUp = false;
 
     double leftTriggerStartTime = 0;
     double leftBumperStartTime = 0;
@@ -54,6 +55,10 @@ public class DanielBlue extends LinearOpMode{
         Intake = hardwareMap.dcMotor.get("Intake");
         Pulley = hardwareMap.dcMotor.get("Pulley");
         Arm = hardwareMap.dcMotor.get("Arm");
+
+        Base = hardwareMap.servo.get("Base");
+        Joint = hardwareMap.servo.get("Joint");
+        Carriage = hardwareMap.servo.get("Carriage");
 
         waitForStart();
 
@@ -97,12 +102,12 @@ public class DanielBlue extends LinearOpMode{
         }
 
         //Move Arm to Position 1
-        if (gamepad1.y) {
+        if (gamepad1.y && yCheck()) {
 
         }
 
         //Move Arm to Position 2
-        if (gamepad1.a) {
+        if (gamepad1.a && aCheck()) {
 
         }
 
@@ -204,6 +209,15 @@ public class DanielBlue extends LinearOpMode{
             Duck.setPower(1);
         } else {
             Duck.setPower(0);
+        }
+    }
+
+    public void armSwitch() {
+        armUp = !armUp;
+        if(armUp = true) {
+            //Write Arm Extension Commands
+        } else {
+            //Reverse Arm Extension Commands
         }
     }
 
