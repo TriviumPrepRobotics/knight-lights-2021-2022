@@ -49,7 +49,7 @@ public class DanielBlue extends LinearOpMode{
         BackRight = hardwareMap.dcMotor.get("Back Right");
 
         FrontLeft.setDirection(DcMotor.Direction.REVERSE);
-        BackLeft.setDirection(DcMotor.Direction.REVERSE);
+        BackRight.setDirection(DcMotor.Direction.REVERSE);
 
         Duck = hardwareMap.dcMotor.get("Duck");
         Intake = hardwareMap.dcMotor.get("Intake");
