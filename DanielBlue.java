@@ -62,6 +62,12 @@ public class DanielBlue extends LinearOpMode{
 
         //Initialization Movement
         pulleySwitch(); //Lifts Intake
+        Base.setPosition(0.69); //Sets Base Servo Position
+        Joint.setPosition(0.1); //Sets Joint Servo Position
+        Carriage.setPosition(0.5); //Sets Carriage Servo Position
+
+        Pulley.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE); //Sets Pulley to ZeroPowerBehavior
+        Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE); //Sets Arm to ZeroPowerBehavior
 
         waitForStart();
 
@@ -185,6 +191,7 @@ public class DanielBlue extends LinearOpMode{
                 defaultMode();
             }
             Pulley.setPower(0);
+            Pulley.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         } else {
             Pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             Pulley.setTargetPosition(376);
@@ -194,6 +201,7 @@ public class DanielBlue extends LinearOpMode{
                 defaultMode();
             }
             Pulley.setPower(0);
+            Pulley.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
     }
 
