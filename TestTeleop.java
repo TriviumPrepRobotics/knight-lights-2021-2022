@@ -23,7 +23,7 @@ public class  TestTeleop extends OpMode {
     DcMotor Arm;
     Servo Joint;
     Servo Carriage;
-    Servo Jank;
+    Servo Base;
 
     public void init() {
 
@@ -37,7 +37,7 @@ public class  TestTeleop extends OpMode {
         Arm = hardwareMap.dcMotor.get("Arm");
         Joint = hardwareMap.servo.get("Joint");
         Carriage = hardwareMap.servo.get("Carriage");
-        Jank = hardwareMap.servo.get("Jank");
+        Base = hardwareMap.servo.get("Base");
 
         FrontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         FrontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -51,9 +51,9 @@ public class  TestTeleop extends OpMode {
         Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         Pulley.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        Joint.setPosition(0.69);
-        Carriage.setPosition(0.1);
-        Jank.setPosition(0.5);
+        Base.setPosition(0.69);
+        Joint.setPosition(0.1);
+        Carriage.setPosition(0.5);
     }
 
 
@@ -97,20 +97,20 @@ public class  TestTeleop extends OpMode {
         }
 
         if(gamepad2.dpad_up){
-            Joint.setPosition(0);
+            Base.setPosition(0);
         }
 
         if(gamepad2.dpad_down){
-            Joint.setPosition(0.69);
-            Carriage.setPosition(0.1);
+            Base.setPosition(0.69);
+            Joint.setPosition(0.1);
         }
 
         if(gamepad2.right_bumper){
-            Carriage.setPosition(0);
+            Joint.setPosition(0);
         }
 
         if(gamepad2.left_bumper){
-            Carriage.setPosition(0.7);
+            Joint.setPosition(0.7);
         }
 
         if(gamepad2.y){
@@ -122,11 +122,11 @@ public class  TestTeleop extends OpMode {
         }
 
         if(gamepad2.x){
-            Jank.setPosition(0.5);
+            Carriage.setPosition(0.5);
         }
 
         if(gamepad2.b){
-            Jank.setPosition(0);
+            Carriage.setPosition(0);
         }
     }
 
