@@ -62,6 +62,7 @@ public class DanielBlue extends LinearOpMode{
 
         //Initialization Movement
         pulleySwitch(); //Lifts Intake
+        pulleyUp = false; //Resets Intake Variable
         Base.setPosition(0.69); //Sets Base Servo Position
         Joint.setPosition(0.1); //Sets Joint Servo Position
         Carriage.setPosition(0.5); //Sets Carriage Servo Position
@@ -73,6 +74,8 @@ public class DanielBlue extends LinearOpMode{
 
         while (opModeIsActive()) {
             defaultMode();
+            telemetry.addData("Runtime: ", getRuntime());
+            telemetry.update();
         }
     }
 
@@ -124,7 +127,7 @@ public class DanielBlue extends LinearOpMode{
 
     //Input Cooldowns
     public boolean leftTriggerCheck() {
-        if(getRuntime() - leftTriggerStartTime > 250) { //Must wait 250 milliseconds before input can be used again
+        if(getRuntime() - leftTriggerStartTime > 0.25) { //Must wait 250 milliseconds before input can be used again
             leftTriggerStartTime = getRuntime();
             return true;
         }
@@ -132,7 +135,7 @@ public class DanielBlue extends LinearOpMode{
     }
 
     public boolean leftBumperCheck() {
-        if(getRuntime() - leftBumperStartTime > 250) { //Must wait 250 milliseconds before input can be used again
+        if(getRuntime() - leftBumperStartTime > 0.25) { //Must wait 250 milliseconds before input can be used again
             leftBumperStartTime = getRuntime();
             return true;
         }
@@ -140,7 +143,7 @@ public class DanielBlue extends LinearOpMode{
     }
 
     public boolean rightTriggerCheck() {
-        if(getRuntime() - rightTriggerStartTime > 250) { //Must wait 250 milliseconds before input can be used again
+        if(getRuntime() - rightTriggerStartTime > 0.25) { //Must wait 250 milliseconds before input can be used again
             rightTriggerStartTime = getRuntime();
             return true;
         }
@@ -148,7 +151,7 @@ public class DanielBlue extends LinearOpMode{
     }
 
     public boolean rightBumperCheck() {
-        if(getRuntime() - rightBumperStartTime > 250) { //Must wait 250 milliseconds before input can be used again
+        if(getRuntime() - rightBumperStartTime > 0.25) { //Must wait 250 milliseconds before input can be used again
             rightBumperStartTime = getRuntime();
             return true;
         }
@@ -156,7 +159,7 @@ public class DanielBlue extends LinearOpMode{
     }
 
     public boolean bCheck() {
-        if(getRuntime() - bStartTime > 250) { //Must wait 250 milliseconds before input can be used again
+        if(getRuntime() - bStartTime > .25) { //Must wait 250 milliseconds before input can be used again
             bStartTime = getRuntime();
             return true;
         }
@@ -164,7 +167,7 @@ public class DanielBlue extends LinearOpMode{
     }
 
     public boolean yCheck() {
-        if(getRuntime() - yStartTime > 250) { //Must wait 250 milliseconds before input can be used again
+        if(getRuntime() - yStartTime > .25) { //Must wait 250 milliseconds before input can be used again
             yStartTime = getRuntime();
             return true;
         }
@@ -172,7 +175,7 @@ public class DanielBlue extends LinearOpMode{
     }
 
     public boolean aCheck() {
-        if(getRuntime() - aStartTime > 250) { //Must wait 250 milliseconds before input can be used again
+        if(getRuntime() - aStartTime > .25) { //Must wait 250 milliseconds before input can be used again
             aStartTime = getRuntime();
             return true;
         }
