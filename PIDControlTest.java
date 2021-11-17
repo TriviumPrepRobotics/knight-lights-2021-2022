@@ -208,7 +208,7 @@ public class PIDControlTest extends LinearOpMode{
         double interval = (targetHeading - originHeading) / 100;
         while(angles.firstAngle < halfWay) {
             telemetry.update();
-            power = 0.6 + 0.004 * ((angles.firstAngle - originHeading) / interval);
+            power = 0.4 + 0.006 * ((angles.firstAngle - originHeading) / interval);
             FrontLeft.setPower(-power);
             BackLeft.setPower(-power);
             FrontRight.setPower(power);
@@ -216,7 +216,7 @@ public class PIDControlTest extends LinearOpMode{
         }
         while(angles.firstAngle > halfWay && angles.firstAngle < targetHeading) {
             telemetry.update();
-            power = 0.6 + 0.004 * ((targetHeading - angles.firstAngle) / interval);
+            power = 0.4 + 0.006 * ((targetHeading - angles.firstAngle) / interval);
             FrontLeft.setPower(-power);
             BackLeft.setPower(-power);
             FrontRight.setPower(power);
