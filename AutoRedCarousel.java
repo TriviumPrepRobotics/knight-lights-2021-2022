@@ -151,15 +151,18 @@ public class AutoRedCarousel extends LinearOpMode {
             if(updatedRecognitions != null){
                 for(Recognition recognition : updatedRecognitions){
                     if(recognition.getLeft() < 200 && recognition.getRight() < 200){
-                        //left code here
+                        telemetry.addData("left", null);
+                        telemetry.update();
                     }
                     if(recognition.getLeft() >= 200 && recognition.getRight() >= 200){
-                        //mid code here
+                        telemetry.addData("mid", null);
+                        telemetry.update();
                     }
                 }
             }
             else{
-                //right code here
+                telemetry.addData("right", null);
+                telemetry.update();
             }
 
         }
