@@ -55,8 +55,8 @@ public class AutoRedCarousel extends LinearOpMode {
     boolean isCollapsed = true;
 
     //CV Stuffs
-    private static final String TFOD_MODEL_ASSET = "KL2021TFODquantized.tflite";
-    private static final String[] LABELS = {"Left", "Middle", "Right"};
+    private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
+    private static final String[] LABELS = {"Ball", "Cube", "Duck", "Marker"};
 
     private static final String VUFORIA_KEY =
             "AR/sArn/////AAABmYT4OHM7O0ghuzdm7dDNDFhZG6Yl6O3GSKrhCfuGTcO9wTvGG646aPxMUSyLSgqkS7u8oRDM8K744VEXHCOYpsfzxT7Gp/Evu8537krH3m91cimF8TITI5nvIsA9bOXSqInL1u+X0uGgU9ZA44A0Ox4nJy/2Yi7YhlPrPl9A30bgrkY+/azNr1SGVGucWZQHACG9/6NkO5KhyWL5ImeiNEsE10mIqvA9FkcC8iWA5ANwGmtsGkzgW01HgYy43BIP2zULL9Bq44vzCda7agK03HvYqgAasu3D8KSI3ecm5E+hvJiFIe62ptFx728jErgtOr5gyKV5oo8nO60x74XUXuu1kpptLjwxXHQOk0h4CHFc";
@@ -142,31 +142,29 @@ public class AutoRedCarousel extends LinearOpMode {
 
         if (opModeIsActive()) {
             telemetry.update();
+            /*
             moveForward(30);
-            turnLeft(angles.firstAngle, 90);
-            /*SUPER IMPORTANT TFOD STUFF
-            if (tfod != null) {
-                // getUpdatedRecognitions() will return null if no new information is available since
-                // the last time that call was made.
-                List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-                if (updatedRecognitions != null) {
-                    telemetry.addData("# Object Detected", updatedRecognitions.size());
-                    // step through the list of recognitions and display boundary info.
-                    int i = 0;
-                    for (Recognition recognition : updatedRecognitions) {
-                        telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                        telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                                recognition.getLeft(), recognition.getTop());
-                        telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                                recognition.getRight(), recognition.getBottom());
-                        i++;
+            turnRight(angles.firstAngle, 90);
+            */
+            tfod.getUpdatedRecognitions();
+            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+            if(updatedRecognitions != null){
+                for(Recognition recognition : updatedRecognitions){
+                    if(recognition.getLeft() < 200 && recognition.getRight() < 200){
+                        //left code here
                     }
-                    telemetry.update();
+                    if(recognition.getLeft() >= 200 && recognition.getRight() >= 200){
+                        //mid code here
+                    }
                 }
             }
-            */
+            else{
+                //right code here
+            }
+
         }
         }
+
 
         private void initVuforia () {
             /*
@@ -188,8 +186,7 @@ public class AutoRedCarousel extends LinearOpMode {
                     "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
             TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
             tfodParameters.minResultConfidence = 0.8f;
-            tfodParameters.isModelTensorFlow2 = false;
-            tfodParameters.isModelQuantized = false;
+            tfodParameters.isModelTensorFlow2 = true;
             tfodParameters.inputSize = 320;
             tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
             tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
