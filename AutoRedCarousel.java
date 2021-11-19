@@ -55,8 +55,8 @@ public class AutoRedCarousel extends LinearOpMode {
     boolean isCollapsed = true;
 
     //CV Stuffs
-    private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
-    private static final String[] LABELS = {"Ball", "Cube", "Duck", "Marker"};
+    private static final String TFOD_MODEL_ASSET = "KL2021TFODquantized.tflite";
+    private static final String[] LABELS = {"Left", "Middle", "Right"};
 
     private static final String VUFORIA_KEY =
             "AR/sArn/////AAABmYT4OHM7O0ghuzdm7dDNDFhZG6Yl6O3GSKrhCfuGTcO9wTvGG646aPxMUSyLSgqkS7u8oRDM8K744VEXHCOYpsfzxT7Gp/Evu8537krH3m91cimF8TITI5nvIsA9bOXSqInL1u+X0uGgU9ZA44A0Ox4nJy/2Yi7YhlPrPl9A30bgrkY+/azNr1SGVGucWZQHACG9/6NkO5KhyWL5ImeiNEsE10mIqvA9FkcC8iWA5ANwGmtsGkzgW01HgYy43BIP2zULL9Bq44vzCda7agK03HvYqgAasu3D8KSI3ecm5E+hvJiFIe62ptFx728jErgtOr5gyKV5oo8nO60x74XUXuu1kpptLjwxXHQOk0h4CHFc";
@@ -70,7 +70,7 @@ public class AutoRedCarousel extends LinearOpMode {
     Orientation angles;
     Acceleration gravity;
 
-    double power;
+    double power = 0.5;
 
     @Override
     public void runOpMode() {
@@ -109,6 +109,14 @@ public class AutoRedCarousel extends LinearOpMode {
 
         if (tfod != null) {
             tfod.activate();
+
+            // The TensorFlow software will scale the input images from the camera to a lower resolution.
+            // This can result in lower detection accuracy at longer distances (> 55cm or 22").
+            // If your target is at distance greater than 50 cm (20") you can adjust the magnification value
+            // to artificially zoom in to the center of image.  For best results, the "aspectRatio" argument
+            // should be set to the value of the images used to create the TensorFlow Object Detection model
+            // (typically 16/9).
+            tfod.setZoom(2.5, 16.0 / 9.0);
         }
 
         telemetry.addData(">", "Press Play to start op mode");
@@ -135,23 +143,27 @@ public class AutoRedCarousel extends LinearOpMode {
         if (opModeIsActive()) {
             telemetry.update();
             moveForward(30);
-            turnRight(angles.firstAngle, 90);
-            /*TFOD stuff for when we need it
-        tfod.getUpdatedRecognitions();
-        List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-        if(updatedRecognitions != null){
-            for(Recognition recognition : updatedRecognitions){
-                if(recognition.getLeft() > 200 && recognition.getRight() > 200){
-                   //left code here
-                }
-                if(recognition.getLeft() < 200 && recognition.getRight() < 200){
-                    //mid code here
+            turnLeft(angles.firstAngle, 90);
+            /*SUPER IMPORTANT TFOD STUFF
+            if (tfod != null) {
+                // getUpdatedRecognitions() will return null if no new information is available since
+                // the last time that call was made.
+                List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+                if (updatedRecognitions != null) {
+                    telemetry.addData("# Object Detected", updatedRecognitions.size());
+                    // step through the list of recognitions and display boundary info.
+                    int i = 0;
+                    for (Recognition recognition : updatedRecognitions) {
+                        telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                        telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                                recognition.getLeft(), recognition.getTop());
+                        telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                                recognition.getRight(), recognition.getBottom());
+                        i++;
+                    }
+                    telemetry.update();
                 }
             }
-        }
-        else{
-            //right code here
-        }
             */
         }
         }
@@ -176,7 +188,8 @@ public class AutoRedCarousel extends LinearOpMode {
                     "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
             TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
             tfodParameters.minResultConfidence = 0.8f;
-            tfodParameters.isModelTensorFlow2 = true;
+            tfodParameters.isModelTensorFlow2 = false;
+            tfodParameters.isModelQuantized = false;
             tfodParameters.inputSize = 320;
             tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
             tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
@@ -205,7 +218,7 @@ public class AutoRedCarousel extends LinearOpMode {
             }
         }
 
-        public void moveForward ( double distance){ //537.7 PPR
+        public void moveForward (double distance){ //537.7 PPR
             FrontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             FrontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             BackLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -222,7 +235,6 @@ public class AutoRedCarousel extends LinearOpMode {
             BackLeft.setTargetPosition(encoderdrivingtarget);
             BackRight.setTargetPosition(encoderdrivingtarget);
 
-
             FrontLeft.setPower(.6);
             FrontRight.setPower(.6);
             BackLeft.setPower(.6);
@@ -232,6 +244,15 @@ public class AutoRedCarousel extends LinearOpMode {
             FrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             BackLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             BackRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while(FrontRight.isBusy() || FrontLeft.isBusy()) {
+
+            }
+
+            FrontLeft.setPower(0);
+            FrontRight.setPower(0);
+            BackLeft.setPower(0);
+            BackRight.setPower(0);
         }
 
     void composeTelemetry() {
@@ -306,9 +327,15 @@ public class AutoRedCarousel extends LinearOpMode {
         double halfWay = targetHeading - (turnHeading / 2);
         double interval = (targetHeading - originHeading) / 10;
         while(angles.firstAngle < halfWay) {
+            FrontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            FrontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            BackRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            BackLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
             telemetry.addData("First Half: ", true);
             telemetry.addData("Second Half: ", false);
             telemetry.addData("Target Heading: ", targetHeading);
+            telemetry.addData("Motor Power: ", FrontLeft.getPower());
             telemetry.update();
             power = 0.3;
             //power = 0.2 + (powerMax - 0.2) * ((angles.firstAngle - originHeading) / interval);
@@ -342,6 +369,10 @@ public class AutoRedCarousel extends LinearOpMode {
         double halfWay = targetHeading + (turnHeading / 2);
         double interval = -(targetHeading + originHeading) / 10;
         while(angles.firstAngle > halfWay) {
+            FrontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            FrontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            BackRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            BackLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             telemetry.addData("First Half: ", true);
             telemetry.addData("Second Half: ", false);
             telemetry.addData("Target Heading: ", targetHeading);
