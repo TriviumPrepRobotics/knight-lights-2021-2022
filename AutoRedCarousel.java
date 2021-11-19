@@ -109,14 +109,6 @@ public class AutoRedCarousel extends LinearOpMode {
 
         if (tfod != null) {
             tfod.activate();
-
-            // The TensorFlow software will scale the input images from the camera to a lower resolution.
-            // This can result in lower detection accuracy at longer distances (> 55cm or 22").
-            // If your target is at distance greater than 50 cm (20") you can adjust the magnification value
-            // to artificially zoom in to the center of image.  For best results, the "aspectRatio" argument
-            // should be set to the value of the images used to create the TensorFlow Object Detection model
-            // (typically 16/9).
-            tfod.setZoom(2.5, 16.0 / 9.0);
         }
 
         telemetry.addData(">", "Press Play to start op mode");
@@ -124,11 +116,11 @@ public class AutoRedCarousel extends LinearOpMode {
 
         //IMU Stuffs
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
-        parameters.loggingEnabled      = true;
-        parameters.loggingTag          = "IMU";
+        parameters.loggingEnabled = true;
+        parameters.loggingTag = "IMU";
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
         imu = hardwareMap.get(BNO055IMU.class, "imu");
@@ -146,27 +138,40 @@ public class AutoRedCarousel extends LinearOpMode {
             moveForward(30);
             turnRight(angles.firstAngle, 90);
             */
-            tfod.getUpdatedRecognitions();
-            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-            if(updatedRecognitions != null){
-                for(Recognition recognition : updatedRecognitions){
-                    if(recognition.getLeft() < 200 && recognition.getRight() < 200){
-                        telemetry.addData("left", null);
+            while (opModeIsActive()) {
+                tfod.getUpdatedRecognitions();
+                List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+                if (updatedRecognitions != null) {
+                    telemetry.addData("# Object Detected", updatedRecognitions.size());
+                    // step through the list of recognitions and display boundary info.
+                    int i = 0;
+                    for (Recognition recognition : updatedRecognitions) {
+                        telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                        telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                                recognition.getLeft(), recognition.getTop());
+                        telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                                recognition.getRight(), recognition.getBottom());
+                        telemetry.addData("Left Coordinate: ", recognition.getLeft());
+                        telemetry.addData("Right Coordinate: ", recognition.getRight());
                         telemetry.update();
+                        i++;
+                        if (recognition.getLeft() < 200 && recognition.getRight() < 200) {
+                            telemetry.addData("left", null);
+                            telemetry.update();
+                        }
+                        if (recognition.getLeft() >= 200 && recognition.getRight() >= 200) {
+                            telemetry.addData("mid", null);
+                            telemetry.update();
+                        }
                     }
-                    if(recognition.getLeft() >= 200 && recognition.getRight() >= 200){
-                        telemetry.addData("mid", null);
-                        telemetry.update();
-                    }
+                } else {
+                    telemetry.addData("right", null);
+                    telemetry.update();
                 }
+                sleep(20000);
             }
-            else{
-                telemetry.addData("right", null);
-                telemetry.update();
-            }
-
         }
-        }
+    }
 
 
         private void initVuforia () {
