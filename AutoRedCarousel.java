@@ -141,6 +141,7 @@ public class AutoRedCarousel extends LinearOpMode {
         imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
 
         if (opModeIsActive()) {
+            telemetry.update();
             moveForward(30);
             turnRight(angles.firstAngle, 90);
             /*SUPER IMPORTANT TFOD STUFF
