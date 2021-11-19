@@ -66,9 +66,15 @@ public class PIDControlTest extends LinearOpMode{
 
         imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
 
+        int value = 1;
+
         while (opModeIsActive()) {
             telemetry.update();
-            turnLeft(angles.firstAngle, 45);
+            if(value == 1) {
+                turnLeft(angles.firstAngle, 45);
+                turnRight(angles.firstAngle, 45);
+            }
+            value++;
         }
 
     }
@@ -202,26 +208,77 @@ public class PIDControlTest extends LinearOpMode{
         return (power += value);
     }
 
+    double powerMax = 0.4;
+
     void turnLeft(double originHeading, double turnHeading) {
         double targetHeading = originHeading + turnHeading;
         double halfWay = targetHeading - (turnHeading / 2);
-        double interval = (targetHeading - originHeading) / 100;
+        double interval = (targetHeading - originHeading) / 10;
         while(angles.firstAngle < halfWay) {
+            telemetry.addData("First Half: ", true);
+            telemetry.addData("Second Half: ", false);
+            telemetry.addData("Target Heading: ", targetHeading);
             telemetry.update();
-            power = 0.4 + 0.006 * ((angles.firstAngle - originHeading) / interval);
-            FrontLeft.setPower(-power);
-            BackLeft.setPower(-power);
-            FrontRight.setPower(power);
-            BackRight.setPower(power);
+            power = 0.3;
+            //power = 0.2 + (powerMax - 0.2) * ((angles.firstAngle - originHeading) / interval);
+            //power = 0.25 + 0.05 * ((angles.firstAngle - originHeading) / interval);
+            FrontLeft.setPower(power);
+            BackLeft.setPower(power);
+            FrontRight.setPower(-power);
+            BackRight.setPower(-power);
         }
         while(angles.firstAngle > halfWay && angles.firstAngle < targetHeading) {
+            telemetry.addData("Second Half: ", true);
+            telemetry.addData("First Half: ", false);
+            telemetry.addData("Target Heading: ", targetHeading);
             telemetry.update();
-            power = 0.4 + 0.006 * ((targetHeading - angles.firstAngle) / interval);
-            FrontLeft.setPower(-power);
-            BackLeft.setPower(-power);
-            FrontRight.setPower(power);
-            BackRight.setPower(power);
+            //power = 0.2 + (powerMax - 0.2) * ((targetHeading - angles.firstAngle) / interval);
+            power = 0.2 + 0.05 * ((targetHeading - angles.firstAngle) / interval);
+            FrontLeft.setPower(power);
+            BackLeft.setPower(power);
+            FrontRight.setPower(-power);
+            BackRight.setPower(-power);
         }
+        //Correction Code
+        telemetry.addData("Second Half: ", false);
+        telemetry.addData("First Half: ", false);
+        telemetry.update();
+        power = 0;
+    }
+
+    void turnRight(double originHeading, double turnHeading) {
+        double targetHeading = originHeading - turnHeading;
+        double halfWay = targetHeading + (turnHeading / 2);
+        double interval = -(targetHeading + originHeading) / 10;
+        while(angles.firstAngle > halfWay) {
+            telemetry.addData("First Half: ", true);
+            telemetry.addData("Second Half: ", false);
+            telemetry.addData("Target Heading: ", targetHeading);
+            telemetry.update();
+            power = -0.3;
+            //power = 0.2 + (powerMax - 0.2) * ((angles.firstAngle - originHeading) / interval);
+            //power = 0.25 + 0.05 * ((angles.firstAngle - originHeading) / interval);
+            FrontLeft.setPower(power);
+            BackLeft.setPower(power);
+            FrontRight.setPower(-power);
+            BackRight.setPower(-power);
+        }
+        while(angles.firstAngle < halfWay && angles.firstAngle > targetHeading) {
+            telemetry.addData("Second Half: ", true);
+            telemetry.addData("First Half: ", false);
+            telemetry.addData("Target Heading: ", targetHeading);
+            telemetry.update();
+            //power = 0.2 + (powerMax - 0.2) * ((targetHeading - angles.firstAngle) / interval);
+            power = -(0.2 + 0.05 * ((targetHeading - angles.firstAngle) / interval));
+            FrontLeft.setPower(power);
+            BackLeft.setPower(power);
+            FrontRight.setPower(-power);
+            BackRight.setPower(-power);
+        }
+        //Correction Code
+        telemetry.addData("Second Half: ", false);
+        telemetry.addData("First Half: ", false);
+        telemetry.update();
         power = 0;
     }
 

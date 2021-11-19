@@ -271,7 +271,7 @@ public class DanielBlue extends LinearOpMode{
 
         Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Arm.setTargetPosition(encoderArmTarget); //Arm Encoder is at the horizontal
-        Arm.setPower(1);
+        Arm.setPower(.5);
         Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         while (Arm.isBusy()) {
             defaultMode();
@@ -304,7 +304,7 @@ public class DanielBlue extends LinearOpMode{
 
         Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Arm.setTargetPosition(encoderArmTarget); //Arm Encoder is 45 degrees above horizontal (encoder ticks)
-        Arm.setPower(1);
+        Arm.setPower(.5);
         Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         while (Arm.isBusy()) {
             defaultMode();
@@ -335,7 +335,7 @@ public class DanielBlue extends LinearOpMode{
 
         Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Arm.setTargetPosition(encoderArmTarget); //Arm Encoder is 23 degrees above horizontal (encoder ticks)
-        Arm.setPower(1);
+        Arm.setPower(.5);
         Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         while (Arm.isBusy()) {
             defaultMode();
@@ -362,7 +362,7 @@ public class DanielBlue extends LinearOpMode{
 
         Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Arm.setTargetPosition(encoderArmTarget); //Arm Encoder is 45 degrees above horizontal (encoder ticks)
-        Arm.setPower(1);
+        Arm.setPower(.5);
         Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         while (Arm.isBusy()) {
             defaultMode();
