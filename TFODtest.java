@@ -21,14 +21,15 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
  * is explained below.
  */
 @TeleOp(name = "TFODtest", group = "Concept")
-//@Disabled
+@Disabled
 public class TFODtest extends LinearOpMode {
 
-    private static final String TFOD_MODEL_ASSET = "KL2021TFODquantized.tflite";
+    private static final String TFOD_MODEL_ASSET = "model_unquant.tflite";
     private static final String[] LABELS = {
-            "Left",
-            "Middle",
-            "Right"
+            "Ball",
+            "Cube",
+            "Duck",
+            "Cup"
     };
 
     private static final String VUFORIA_KEY =
@@ -53,7 +54,7 @@ public class TFODtest extends LinearOpMode {
             // to artificially zoom in to the center of image.  For best results, the "aspectRatio" argument
             // should be set to the value of the images used to create the TensorFlow Object Detection model
             // (typically 16/9).
-            tfod.setZoom(2.5, 16.0/9.0);
+            //tfod.setZoom(2.5, 16.0/9.0);
         }
 
         /** Wait for the game to begin */
@@ -71,12 +72,14 @@ public class TFODtest extends LinearOpMode {
                         telemetry.addData("# Object Detected", updatedRecognitions.size());
                         // step through the list of recognitions and display boundary info.
                         int i = 0;
+                        telemetry.addData("This line is being read!", null);
                         for (Recognition recognition : updatedRecognitions) {
                             telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
                             telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
                                     recognition.getLeft(), recognition.getTop());
                             telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
                                     recognition.getRight(), recognition.getBottom());
+                            telemetry.update();
                             i++;
                         }
                         telemetry.update();
@@ -107,7 +110,7 @@ public class TFODtest extends LinearOpMode {
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
         tfodParameters.minResultConfidence = 0.8f;
         tfodParameters.isModelTensorFlow2 = false;
-        tfodParameters.isModelQuantized = true;
+        tfodParameters.isModelQuantized = false;
         tfodParameters.inputSize = 320;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);

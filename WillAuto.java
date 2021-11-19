@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -15,6 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +30,27 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.
 //@Disabled
 public class WillAuto extends LinearOpMode {
 
-    DcMotor FL, FR, BL, BR;
+    DcMotor FrontLeft;
+    DcMotor FrontRight;
+    DcMotor BackLeft;
+    DcMotor BackRight;
+    DcMotor Duck;
+    DcMotor Intake;
+    DcMotor Pulley;
+    DcMotor Arm;
+    Servo Joint;
+    Servo Carriage;
+    Servo Door;
+
+    double posx, posy;
+
+    private static final String TFOD_MODEL_ASSET = "BCDCfloat.tflite";
+    private static final String[] LABELS = {
+            "Ball",
+            "Cube",
+            "Duck",
+            "Cup"
+    };
 
     private static final String VUFORIA_KEY =
             "AR/sArn/////AAABmYT4OHM7O0ghuzdm7dDNDFhZG6Yl6O3GSKrhCfuGTcO9wTvGG646aPxMUSyLSgqkS7u8oRDM8K744VEXHCOYpsfzxT7Gp/Evu8537krH3m91cimF8TITI5nvIsA9bOXSqInL1u+X0uGgU9ZA44A0Ox4nJy/2Yi7YhlPrPl9A30bgrkY+/azNr1SGVGucWZQHACG9/6NkO5KhyWL5ImeiNEsE10mIqvA9FkcC8iWA5ANwGmtsGkzgW01HgYy43BIP2zULL9Bq44vzCda7agK03HvYqgAasu3D8KSI3ecm5E+hvJiFIe62ptFx728jErgtOr5gyKV5oo8nO60x74XUXuu1kpptLjwxXHQOk0h4CHFc";
@@ -42,12 +64,15 @@ public class WillAuto extends LinearOpMode {
     private static final float oneAndHalfTile   = 36 * mmPerInch;
 
     // Class Members
-    private OpenGLMatrix lastLocation   = null;
-    private VuforiaLocalizer vuforia    = null;
-    private VuforiaTrackables targets   = null ;
-    private WebcamName webcamName       = null;
+    private OpenGLMatrix lastLocation;
+    private VuforiaLocalizer vuforia;
+    private TFObjectDetector tfod;
+    private VuforiaTrackables targets;
+    private WebcamName webcamName;
 
-    private boolean targetVisible       = false;
+    private boolean targetVisible = false;
+
+    List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
 
     @Override public void runOpMode() {
         // Connect to the camera we are to use.  This name must match what is set up in Robot Configuration
@@ -75,7 +100,6 @@ public class WillAuto extends LinearOpMode {
 
         targets = this.vuforia.loadTrackablesFromAsset("FreightFrenzy");
 
-        List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
         allTrackables.addAll(targets);
 
         identifyTarget(0, "Blue Storage",       -halfField,  oneAndHalfTile, mmTargetHeight, 90, 0, 90);
@@ -95,58 +119,49 @@ public class WillAuto extends LinearOpMode {
             ((VuforiaTrackableDefaultListener) trackable.getListener()).setCameraLocationOnRobot(parameters.cameraName, cameraLocationOnRobot);
         }
 
-        FL = hardwareMap.dcMotor.get("Front Left");
-        FR = hardwareMap.dcMotor.get("Front Right");
-        BL = hardwareMap.dcMotor.get("Back Left");
-        BR = hardwareMap.dcMotor.get("Back Right");
+        FrontLeft = hardwareMap.dcMotor.get("Front Left");
+        FrontRight = hardwareMap.dcMotor.get("Front Right");
+        BackLeft = hardwareMap.dcMotor.get("Back Left");
+        BackRight = hardwareMap.dcMotor.get("Back Right");
+        Duck = hardwareMap.dcMotor.get("Duck");
+        Intake = hardwareMap.dcMotor.get("Intake");
+        Pulley = hardwareMap.dcMotor.get("Pulley");
+        Arm = hardwareMap.dcMotor.get("Arm");
+        Joint = hardwareMap.servo.get("Joint");
+        Carriage = hardwareMap.servo.get("Carriage");
+        Door = hardwareMap.servo.get("Door");
 
         waitForStart();
 
-        /* Note: To use the remote camera preview:
-         * AFTER you hit Init on the Driver Station, use the "options menu" to select "Camera Stream"
-         * Tap the preview window to receive a fresh image.
-         * It is not permitted to transition to RUN while the camera preview window is active.
-         * Either press STOP to exit the OpMode, or use the "options menu" again, and select "Camera Stream" to close the preview window.
+
+
+    }
+
+    private void initVuforia() {
+        /*
+         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          */
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
-        targets.activate();
-        while (!isStopRequested()) {
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
 
-            // check all the trackable targets to see which one (if any) is visible.
-            targetVisible = false;
-            for (VuforiaTrackable trackable : allTrackables) {
-                if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
-                    telemetry.addData("Visible Target", trackable.getName());
-                    targetVisible = true;
+        //  Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
-                    // getUpdatedRobotLocation() will return null if no new information is available since
-                    // the last time that call was made, or if the trackable is not currently visible.
-                    OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
-                    if (robotLocationTransform != null) {
-                        lastLocation = robotLocationTransform;
-                    }
-                    break;
-                }
-            }
+        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
+    }
 
-            if (targetVisible) {
-                // express position (translation) of robot in inches.
-                VectorF translation = lastLocation.getTranslation();
-                telemetry.addData("Pos (inches)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-                        translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
-
-                // express the rotation of the robot in degrees.
-                Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
-                telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
-            }
-            else {
-                telemetry.addData("Visible Target", "none");
-            }
-            telemetry.update();
-        }
-
-        // Disable Tracking when we are done;
-        targets.deactivate();
+    private void initTfod() {
+        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minResultConfidence = 0.8f;
+        tfodParameters.isModelTensorFlow2 = false;
+        tfodParameters.isModelQuantized = false;
+        tfodParameters.inputSize = 320;
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
     }
 
     /***
@@ -156,7 +171,7 @@ public class WillAuto extends LinearOpMode {
      * @param dx, dy, dz  Target offsets in x,y,z axes
      * @param rx, ry, rz  Target rotations in x,y,z axes
      */
-    void    identifyTarget(int targetIndex, String targetName, float dx, float dy, float dz, float rx, float ry, float rz) {
+    void identifyTarget(int targetIndex, String targetName, float dx, float dy, float dz, float rx, float ry, float rz) {
         VuforiaTrackable aTarget = targets.get(targetIndex);
         aTarget.setName(targetName);
         aTarget.setLocation(OpenGLMatrix.translation(dx, dy, dz)
@@ -164,36 +179,63 @@ public class WillAuto extends LinearOpMode {
     }
 
     public void moveforward(double distance){
-        FL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        FR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        BL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        BR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        FrontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        FrontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BackLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BackRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         double circumference = 3.14 * 5;
         double rotationsneeded = distance / circumference;
         int encoderdrivingtarget = (int) (rotationsneeded * 538);
 
-        FL.setTargetPosition(-encoderdrivingtarget);
-        FR.setTargetPosition(encoderdrivingtarget);
-        BL.setTargetPosition(-encoderdrivingtarget);
-        BR.setTargetPosition(encoderdrivingtarget);
+        FrontLeft.setTargetPosition(encoderdrivingtarget);
+        FrontRight.setTargetPosition(-encoderdrivingtarget);
+        BackLeft.setTargetPosition(-encoderdrivingtarget);
+        BackRight.setTargetPosition(encoderdrivingtarget);
 
-        FL.setPower(0.75);
-        FR.setPower(0.75);
-        BL.setPower(0.75);
-        BR.setPower(0.75);
+        FrontLeft.setPower(0.75);
+        FrontRight.setPower(0.75);
+        BackLeft.setPower(0.75);
+        BackRight.setPower(0.75);
 
-        FL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        FR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        BL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        BR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        FrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        FrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        BackLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        BackRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         sleep(1000);
 
-        FL.setPower(0);
-        FR.setPower(0);
-        BL.setPower(0);
-        BR.setPower(0);
+        FrontLeft.setPower(0);
+        FrontRight.setPower(0);
+        BackLeft.setPower(0);
+        BackRight.setPower(0);
+    }
+
+    public void VuCoords() {
+        targets.activate();
+        // check all the trackable targets to see which one (if any) is visible.
+        targetVisible = false;
+        for (VuforiaTrackable trackable : allTrackables) {
+            if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
+                targetVisible = true;
+                // getUpdatedRobotLocation() will return null if no new information is available since
+                // the last time that call was made, or if the trackable is not currently visible.
+                OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
+                if (robotLocationTransform != null) {
+                    lastLocation = robotLocationTransform;
+                }
+                break;
+            }
+        }
+
+        if (targetVisible) {
+            // express position (translation) of robot in inches.
+            VectorF translation = lastLocation.getTranslation();
+            posx = translation.get(0) / mmPerInch;
+            posy = translation.get(1) / mmPerInch;
+        }
+        // Disable Tracking when we are done;
+        targets.deactivate();
     }
 
 }
