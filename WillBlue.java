@@ -16,9 +16,6 @@ public class WillBlue extends LinearOpMode{
     DcMotor Arm;
     DcMotor Claw;
 
-    double ArmPos;
-    double ClawPos;
-
     double leftTriggerStartTime = 0;
     double leftBumperStartTime = 0;
     double rightBumperStartTime = 0;
@@ -68,38 +65,38 @@ public class WillBlue extends LinearOpMode{
 
         while(opModeIsActive()){
 
-         if(gamepad1.b && bCooldown()){
+         if(gamepad1.b){
              duckSwitch();
          }
 
-         if(gamepad1.x && xCooldown()){
+         if(gamepad1.x){
              Arm.setTargetPosition(0);
              Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-             Arm.setPower(0.8);
+             Arm.setPower(0.5);
          }
 
          if(gamepad1.dpad_up){
              Arm.setTargetPosition(-962);
              Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-             Arm.setPower(0.8);
+             Arm.setPower(0.5);
          }
 
          if(gamepad1.dpad_left){
              Arm.setTargetPosition(-1098);
              Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-             Arm.setPower(0.8);
+             Arm.setPower(0.5);
          }
 
          if(gamepad1.dpad_down){
              Arm.setTargetPosition(-1232);
              Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-             Arm.setPower(0.8);
+             Arm.setPower(0.5);
          }
 
          if(gamepad1.b){
              Arm.setTargetPosition(-1370);
              Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-             Arm.setPower(0.8);
+             Arm.setPower(0.5);
          }
 
          if(gamepad1.right_bumper && rightBumperCooldown()){
@@ -185,7 +182,7 @@ public class WillBlue extends LinearOpMode{
 
     public void ClawOn() {
         ClawOn = !ClawOn;
-        if(ClawOn){
+        if (ClawOn) {
             Claw.setTargetPosition(150);
             Claw.setMode((DcMotor.RunMode.RUN_TO_POSITION));
             Claw.setPower(0.5);
