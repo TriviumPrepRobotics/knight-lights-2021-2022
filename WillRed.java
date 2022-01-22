@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "Will Blue")
 //@Disabled
-public class WillBlue extends LinearOpMode{
+public class WillRed extends LinearOpMode{
 
     DcMotor FrontLeft;
     DcMotor FrontRight;
@@ -84,48 +84,48 @@ public class WillBlue extends LinearOpMode{
                 BackRight.setPower(gamepad1.right_stick_y * power);
             }
 
-         if(gamepad1.a && aCooldown()){
-             duckSwitch();
-         }
+            if(gamepad1.a && aCooldown()){
+                duckSwitch();
+            }
 
-         if(gamepad1.x){
-             Arm.setTargetPosition(-350);
-             Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-             Arm.setPower(0.35);
-         }
+            if(gamepad1.x){
+                Arm.setTargetPosition(-350);
+                Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                Arm.setPower(0.35);
+            }
 
-         if(gamepad1.dpad_up){
-             Arm.setTargetPosition(-900);
-             Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-             Arm.setPower(0.35);
-         }
+            if(gamepad1.dpad_up){
+                Arm.setTargetPosition(-900);
+                Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                Arm.setPower(0.35);
+            }
 
-         if(gamepad1.dpad_left){
-             Arm.setTargetPosition(-1100);
-             Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-             Arm.setPower(0.35);
-         }
+            if(gamepad1.dpad_left){
+                Arm.setTargetPosition(-1100);
+                Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                Arm.setPower(0.35);
+            }
 
-         if(gamepad1.dpad_down){
-             Arm.setTargetPosition(-1220);
-             Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-             Arm.setPower(0.35);
-         }
+            if(gamepad1.dpad_down){
+                Arm.setTargetPosition(-1220);
+                Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                Arm.setPower(0.35);
+            }
 
-         if(gamepad1.b){
-             Arm.setTargetPosition(-1370);
-             Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-             Arm.setPower(0.35);
-         }
+            if(gamepad1.b){
+                Arm.setTargetPosition(-1370);
+                Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                Arm.setPower(0.35);
+            }
 
-         if(gamepad1.right_bumper && rightBumperCooldown()){
-             ClawOn();
-         }
+            if(gamepad1.right_bumper && rightBumperCooldown()){
+                ClawOn();
+            }
 
-         if(Arm.getCurrentPosition() < - 500){
-             Arm.setPower(0.15);
-         } else {
-             Arm.setPower(0.35);
+            if(Arm.getCurrentPosition() < - 500){
+                Arm.setPower(0.15);
+            } else {
+                Arm.setPower(0.35);
             }
 
         }
@@ -199,7 +199,7 @@ public class WillBlue extends LinearOpMode{
     public void duckSwitch() {
         duckOn = !duckOn;
         if (duckOn) {
-            Duck.setPower(-1);
+            Duck.setPower(1);
         } else {
             Duck.setPower(0);
         }
