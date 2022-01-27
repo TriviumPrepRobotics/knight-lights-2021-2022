@@ -15,6 +15,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 //Camera Vision Imports
@@ -49,7 +50,7 @@ import java.util.List;
 
 import java.util.Locale;
 
-@Autonomous(name = "Red Carousel", group = "")
+@Autonomous(name = "Red Carousel", group = "comp")
 //@Disabled
 public class RED_CarouselAuto extends LinearOpMode{
 
@@ -67,6 +68,8 @@ public class RED_CarouselAuto extends LinearOpMode{
     //Booleans
     boolean duckOn = false;
     boolean clawOn = true;
+
+    double power = 0.5;
 
     //Camera Vision Stuffs
     private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
@@ -98,15 +101,24 @@ public class RED_CarouselAuto extends LinearOpMode{
         Arm = hardwareMap.dcMotor.get("Arm");
         Claw = hardwareMap.dcMotor.get("Claw");
 
+        BackLeft.setDirection(DcMotorSimple.Direction.FORWARD);
+        BackRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        FrontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        FrontRight.setDirection(DcMotorSimple.Direction.FORWARD);
+
+
         Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         Claw.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Claw.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         //Vuforia Stuffs
-        initVuforia();
+//        initVuforia();
 
         //TensorFlow Stuffs
-        initTfod();
-        if (tfod != null) {
+//        initTfod();
+/*        if (tfod != null) {
             tfod.activate();
             // The TensorFlow software will scale the input images from the camera to a lower resolution.
             // This can result in lower detection accuracy at longer distances (> 55cm or 22").
@@ -137,7 +149,7 @@ public class RED_CarouselAuto extends LinearOpMode{
                 telemetry.update();
             }
         }
-
+*/
         //IMU Stuffs
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -159,13 +171,16 @@ public class RED_CarouselAuto extends LinearOpMode{
 
         waitForStart();
 
+        imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
+
         moveForward(6);
         turn(90);
         moveBackward(24);
         duckSwitch();
-        sleep(3000);
+        sleep(2000);
+        duckSwitch();
         moveForward(6);
-        turn(45);
+        EncoderTurn(-45);
         moveForward(40);
         armTop();
         sleep(250);
@@ -194,10 +209,10 @@ public class RED_CarouselAuto extends LinearOpMode{
         BackLeft.setTargetPosition(-encoderdrivingtarget);
         BackRight.setTargetPosition(-encoderdrivingtarget);
 
-        FrontLeft.setPower(.6);
-        FrontRight.setPower(.6);
-        BackLeft.setPower(.6);
-        BackRight.setPower(.6);
+        FrontLeft.setPower(.4);
+        FrontRight.setPower(.4);
+        BackLeft.setPower(.4);
+        BackRight.setPower(.4);
 
         FrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         FrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -229,10 +244,10 @@ public class RED_CarouselAuto extends LinearOpMode{
         BackLeft.setTargetPosition(encoderdrivingtarget);
         BackRight.setTargetPosition(encoderdrivingtarget);
 
-        FrontLeft.setPower(.6);
-        FrontRight.setPower(.6);
-        BackLeft.setPower(.6);
-        BackRight.setPower(.6);
+        FrontLeft.setPower(.4);
+        FrontRight.setPower(.4);
+        BackLeft.setPower(.4);
+        BackRight.setPower(.4);
 
         FrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         FrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -297,6 +312,35 @@ public class RED_CarouselAuto extends LinearOpMode{
 
     }
 
+    public void EncoderTurn(double distance) {
+        FrontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        FrontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BackLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        BackRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        double circumference = 3.14 * 5;
+        double target = distance / 360;
+        double encodertarget = target * 51.7;
+        double rotationsneeded = encodertarget / circumference;
+        int encoderdrivingtarget = (int) (rotationsneeded * 538);
+
+        FrontLeft.setTargetPosition(encoderdrivingtarget);
+        FrontRight.setTargetPosition(-encoderdrivingtarget);
+        BackLeft.setTargetPosition(encoderdrivingtarget);
+        BackRight.setTargetPosition(-encoderdrivingtarget);
+
+        FrontLeft.setPower(0.5);
+        FrontRight.setPower(0.5);
+        BackLeft.setPower(0.5);
+        BackRight.setPower(0.5);
+
+        while( FrontLeft.isBusy() || FrontRight.isBusy() || BackLeft.isBusy()|| BackRight.isBusy()){}
+
+        FrontLeft.setPower(0);
+        FrontRight.setPower(0);
+        BackLeft.setPower(0);
+        BackRight.setPower(0);
+    }
 
     //System Methods
 
@@ -325,7 +369,7 @@ public class RED_CarouselAuto extends LinearOpMode{
     public void duckSwitch() {
         duckOn = !duckOn;
         if (duckOn) {
-            Duck.setPower(1);
+            Duck.setPower(-0.5);
         } else {
             Duck.setPower(0);
         }
