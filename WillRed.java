@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@TeleOp(name = "Will Blue")
+@TeleOp(name = "Red", group = "comp")
 //@Disabled
 public class WillRed extends LinearOpMode{
 
@@ -95,25 +95,25 @@ public class WillRed extends LinearOpMode{
             }
 
             if(gamepad1.dpad_up){
-                Arm.setTargetPosition(-900);
+                Arm.setTargetPosition(-920);
                 Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 Arm.setPower(0.35);
             }
 
             if(gamepad1.dpad_left){
-                Arm.setTargetPosition(-1100);
+                Arm.setTargetPosition(-1120);
                 Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 Arm.setPower(0.35);
             }
 
             if(gamepad1.dpad_down){
-                Arm.setTargetPosition(-1220);
+                Arm.setTargetPosition(-1240);
                 Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 Arm.setPower(0.35);
             }
 
             if(gamepad1.b){
-                Arm.setTargetPosition(-1370);
+                Arm.setTargetPosition(-1400);
                 Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 Arm.setPower(0.35);
             }
@@ -199,7 +199,7 @@ public class WillRed extends LinearOpMode{
     public void duckSwitch() {
         duckOn = !duckOn;
         if (duckOn) {
-            Duck.setPower(1);
+            Duck.setPower(-0.5);
         } else {
             Duck.setPower(0);
         }
