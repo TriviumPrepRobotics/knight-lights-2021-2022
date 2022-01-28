@@ -71,6 +71,10 @@ public class RED_CarouselAuto extends LinearOpMode{
 
     double power = 0.5;
 
+    //Coefficients for PD Control
+    double proportionalCoefficient = 0.7;
+    double derivativeCoefficient = 0.7;
+
     //Camera Vision Stuffs
     private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
     private static final String[] LABELS = {
@@ -172,15 +176,19 @@ public class RED_CarouselAuto extends LinearOpMode{
         waitForStart();
 
         imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
-
+/*
         moveForward(6);
         turn(90);
-        moveBackward(24);
+        moveBackward(25);
         duckSwitch();
         sleep(2000);
         duckSwitch();
         moveForward(6);
-        EncoderTurn(-45);
+        telemetry.addData("Turn started", null);
+        telemetry.update();
+        Realturn(45);
+        telemetry.addData("Turn finished", null);
+        telemetry.update();
         moveForward(40);
         armTop();
         sleep(250);
@@ -190,6 +198,17 @@ public class RED_CarouselAuto extends LinearOpMode{
         moveBackward(20);
         turn(90);
         moveForward(80);
+ */
+        moveForward(12);
+        sleep(150);
+        Realturn(-45);
+        sleep(150);
+        armTop();
+        sleep(150);
+        clawOn();
+        sleep(250);
+        clawOn();
+
     }
 
     //Movement Methods
@@ -313,34 +332,86 @@ public class RED_CarouselAuto extends LinearOpMode{
     }
 
     public void EncoderTurn(double distance) {
+        telemetry.addData("turning", null);
+        telemetry.update();
         FrontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         FrontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         BackLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         BackRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         double circumference = 3.14 * 5;
+        /*
         double target = distance / 360;
         double encodertarget = target * 51.7;
-        double rotationsneeded = encodertarget / circumference;
+        */
+        double rotationsneeded = distance / circumference;
         int encoderdrivingtarget = (int) (rotationsneeded * 538);
+        telemetry.addData("math done", null);
+        telemetry.update();
 
         FrontLeft.setTargetPosition(encoderdrivingtarget);
         FrontRight.setTargetPosition(-encoderdrivingtarget);
         BackLeft.setTargetPosition(encoderdrivingtarget);
         BackRight.setTargetPosition(-encoderdrivingtarget);
+        telemetry.addData("encoder set", null);
+        telemetry.update();
 
         FrontLeft.setPower(0.5);
         FrontRight.setPower(0.5);
         BackLeft.setPower(0.5);
         BackRight.setPower(0.5);
 
-        while( FrontLeft.isBusy() || FrontRight.isBusy() || BackLeft.isBusy()|| BackRight.isBusy()){}
+        sleep(1000);
 
         FrontLeft.setPower(0);
         FrontRight.setPower(0);
         BackLeft.setPower(0);
         BackRight.setPower(0);
     }
+
+    void Realturn(double target) {
+        angles = imu.getAngularOrientation(AxesReference.EXTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double origin = angles.firstAngle;
+        telemetry.addData("Can read from firstAngle: ", true);
+        telemetry.update();
+        sleep(1000);
+        boolean turnRight = directionCheck(target, origin);
+        telemetry.addData("turnRight: ", true);
+        telemetry.update();
+        sleep(1000);
+        double distance = calculateTurnDistance(target, origin);
+        telemetry.addData("calculate turn distance: ", true);
+        telemetry.update();
+        sleep(1000);
+        double halfway = calculateHalfway(target, angles.firstAngle, distance);
+        telemetry.addData("calculate turn halfway: ", true);
+        telemetry.update();
+        sleep(1000);
+        beginAcceleration(proportionalCoefficient, distance, turnRight);
+        telemetry.addData("begin moving: ", true);
+        telemetry.update();
+        while (FrontLeft.isBusy() || FrontRight.isBusy() || BackLeft.isBusy() || BackRight.isBusy()) {
+            if (halfwayCheck(halfway, turnRight)) {
+                beginDecceleration(proportionalCoefficient, distance, turnRight);
+                telemetry.addData("slow down: ", true);
+                telemetry.update();
+                sleep(1000);
+            }
+            if (angles.firstAngle == target) {
+                telemetry.addData("has reached target: ", true);
+                telemetry.update();
+                sleep(1000);
+                FrontRight.setPower(0);
+                FrontLeft.setPower(0);
+                BackLeft.setPower(0);
+                BackRight.setPower(0);
+            }
+        }
+
+    }
+
+    double pastPosition = 0;
+    double pastVelTime = 0;
 
     //System Methods
 
@@ -386,6 +457,107 @@ public class RED_CarouselAuto extends LinearOpMode{
             Claw.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             Claw.setPower(0.25);
         }
+    }
+
+    double calculateAngularVelocity() {
+        double currentPosition = (double) angles.firstAngle;
+        double currentTime = getRuntime();
+        double angularVelocity = (currentPosition - pastPosition) / (currentTime - pastVelTime);
+        pastPosition = currentPosition;
+        pastVelTime = currentTime;
+        return angularVelocity;
+    }
+
+    double pastVelocity = 0;
+    double pastAccTime = 0;
+
+    double calculateAngularAcceleration() {
+        double currentVelocity = calculateAngularVelocity();
+        double currentTime = getRuntime();
+        double angularAcceleration = (currentVelocity - pastVelocity) / (currentTime - pastAccTime);
+        pastVelocity = currentVelocity;
+        pastAccTime = currentTime;
+        return angularAcceleration;
+    }
+
+    boolean directionCheck(double target, double origin) {
+        if (target > origin) {
+            return false;
+        }
+        return true;
+    }
+
+    double calculateTurnDistance(double target, double origin) {
+        if (target > origin && origin >= 0) {
+            return target - origin;
+        }
+        if (target > origin && origin < 0) {
+            return target + Math.abs(origin);
+        }
+        if (origin > target && target >= 0) {
+            return origin - target;
+        }
+        if (origin > target && target < 0) {
+            return origin + Math.abs(target);
+        }
+        return 0;
+    }
+
+    double calculateHalfway(double target, double origin, double distance) {
+        if (target > origin) {
+            return target - (distance/2);
+        }
+        if (origin > target && target >= 0) {
+            return origin - (distance/2);
+        }
+        return 0;
+    }
+
+    void beginAcceleration(double gain, double distance, boolean turnRight) {
+        double turnPower = gain * (distance/360) + 0.3;
+
+        if (turnRight) {
+            FrontLeft.setPower(turnPower);
+            BackLeft.setPower(turnPower);
+            FrontRight.setPower(-turnPower);
+            BackRight.setPower(-turnPower);
+        } else {
+            FrontLeft.setPower(-turnPower);
+            BackLeft.setPower(-turnPower);
+            FrontRight.setPower(turnPower);
+            BackRight.setPower(turnPower);
+        }
+
+    }
+
+    void beginDecceleration(double gain, double distance, boolean turnRight) {
+        double turnPower = gain * (distance/360) + 0.3;
+
+        if (turnRight) {
+            FrontLeft.setPower(-turnPower);
+            BackLeft.setPower(-turnPower);
+            FrontRight.setPower(turnPower);
+            BackRight.setPower(turnPower);
+        } else {
+            FrontLeft.setPower(turnPower);
+            BackLeft.setPower(turnPower);
+            FrontRight.setPower(-turnPower);
+            BackRight.setPower(-turnPower);
+        }
+
+    }
+
+    boolean halfwayCheck(double halfway, boolean turnRight) {
+        if (turnRight) {
+            if (angles.firstAngle < halfway) {
+                return true;
+            }
+            return false;
+        }
+        if (angles.firstAngle > halfway) {
+            return true;
+        }
+        return false;
     }
 
     //Vuforia Methods

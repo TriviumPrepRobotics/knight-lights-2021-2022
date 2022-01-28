@@ -37,8 +37,8 @@ public class TurningTest extends LinearOpMode{
     Acceleration gravity;
 
     //Coefficients for PD Control
-    double proportionalCoefficient = 0.2;
-    double derivativeCoefficient = 0.2;
+    double proportionalCoefficient = 0.7;
+    double derivativeCoefficient = 0.7;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -63,12 +63,17 @@ public class TurningTest extends LinearOpMode{
 
         composeTelemetry();
 
+        telemetry.addData("Robot is ready to go", null);
+        telemetry.update();
+
         waitForStart();
 
         imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
 
         if (opModeIsActive()) {
             turn(90);
+            telemetry.addData("has done turn", null);
+            telemetry.update();
         }
 
     }
@@ -76,16 +81,38 @@ public class TurningTest extends LinearOpMode{
     //Turn Methods
 
     void turn(double target) {
+        angles = imu.getAngularOrientation(AxesReference.EXTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double origin = angles.firstAngle;
+        telemetry.addData("Can read from firstAngle: ", true);
+        telemetry.update();
+        sleep(1000);
         boolean turnRight = directionCheck(target, origin);
+        telemetry.addData("turnRight: ", true);
+        telemetry.update();
+        sleep(1000);
         double distance = calculateTurnDistance(target, origin);
+        telemetry.addData("calculate turn distance: ", true);
+        telemetry.update();
+        sleep(1000);
         double halfway = calculateHalfway(target, angles.firstAngle, distance);
+        telemetry.addData("calculate turn halfway: ", true);
+        telemetry.update();
+        sleep(1000);
         beginAcceleration(proportionalCoefficient, distance, turnRight);
+        telemetry.addData("begin moving: ", true);
+        telemetry.update();
+        sleep(1000);
         while (FrontLeft.isBusy() || FrontRight.isBusy() || BackLeft.isBusy() || BackRight.isBusy()) {
             if (halfwayCheck(halfway, turnRight)) {
                 beginDecceleration(proportionalCoefficient, distance, turnRight);
+                telemetry.addData("slow down: ", true);
+                telemetry.update();
+                sleep(1000);
             }
             if (angles.firstAngle == target) {
+                telemetry.addData("has reached target: ", true);
+                telemetry.update();
+                sleep(1000);
                 FrontRight.setPower(0);
                 FrontLeft.setPower(0);
                 BackLeft.setPower(0);
