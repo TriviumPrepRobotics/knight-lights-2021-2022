@@ -1,37 +1,17 @@
 package org.firstinspires.ftc.teamcode;
 
 //Normal FTC Imports
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import java.util.List;
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 
-//Hardware Imports
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 
-//Camera Vision Imports
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
-import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-
-//Sensor Data Interpretation Imports
 import org.firstinspires.ftc.robotcore.external.Func;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -39,20 +19,19 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
-import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XZY;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
-
-//Other Imports
-import java.util.ArrayList;
-import java.util.List;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.Locale;
 
-@Autonomous(name = "Tournament Red Carousel", group = "comp")
+//Hardware Imports
+//Camera Vision Imports
+//Sensor Data Interpretation Imports
+//Other Imports
+
+@Autonomous(name = "Tournament Blue Warehouse", group = "comp")
 //@Disabled
-public class RED_CarouselAuto extends LinearOpMode{
+public class BLUE_WarehouseAuto extends LinearOpMode{
 
     //Hardware Map
 
@@ -196,21 +175,46 @@ public class RED_CarouselAuto extends LinearOpMode{
         sleep(250);
         armBack();
         moveBackward(20);
-        turn(90);
+        turn(90);        sleep(500);        sleep(500);
+
         moveForward(80);
  */
-        moveForward(18);
-        sleep(500);
+
+/*
         Realturn(-45);
         moveForward(6);
         sleep(500);
         armTop();
         sleep(500);
         clawOn();
-        sleep(500);
+        sleep(1000);
         clawOn();
+        armBack();
+
         sleep(500);
         moveBackward(6);
+        sleep(500);
+        turn(-45);
+        sleep(500);
+*/
+
+        FrontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        FrontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BackLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BackRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        angles = imu.getAngularOrientation(AxesReference.EXTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+            FrontLeft.setPower(1);
+            FrontRight.setPower(1);
+            BackLeft.setPower(1);
+            BackRight.setPower(1);
+            sleep(1000);
+            FrontLeft.setPower(0);
+            FrontRight.setPower(0);
+            BackLeft.setPower(0);
+            BackRight.setPower(0);
+
 
     }
 
@@ -335,36 +339,38 @@ public class RED_CarouselAuto extends LinearOpMode{
     }
 
     public void EncoderTurn(double distance) {
-        telemetry.addData("turning", null);
-        telemetry.update();
         FrontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         FrontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         BackLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         BackRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        double circumference = 3.14 * 5;
-        /*
-        double target = distance / 360;
-        double encodertarget = target * 51.7;
-        */
-        double rotationsneeded = distance / circumference;
-        int encoderdrivingtarget = (int) (rotationsneeded * 538);
-        telemetry.addData("math done", null);
-        telemetry.update();
+        FrontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        FrontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BackLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BackRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        FrontLeft.setTargetPosition(encoderdrivingtarget);
-        FrontRight.setTargetPosition(-encoderdrivingtarget);
-        BackLeft.setTargetPosition(encoderdrivingtarget);
-        BackRight.setTargetPosition(-encoderdrivingtarget);
-        telemetry.addData("encoder set", null);
-        telemetry.update();
+        double circumference = 3.14 * 5; //pi times wheel diameter
+        double rotationsneeded = distance / circumference; //length(in) divided by circumference
+        int encoderdrivingtarget = (int) (rotationsneeded * 538); //rotations needed times motor ticks per revolution
 
-        FrontLeft.setPower(0.5);
-        FrontRight.setPower(0.5);
-        BackLeft.setPower(0.5);
-        BackRight.setPower(0.5);
+        FrontLeft.setTargetPosition(-encoderdrivingtarget);
+        FrontRight.setTargetPosition(encoderdrivingtarget);
+        BackLeft.setTargetPosition(-encoderdrivingtarget);
+        BackRight.setTargetPosition(encoderdrivingtarget);
 
-        sleep(1000);
+        FrontLeft.setPower(.4);
+        FrontRight.setPower(.4);
+        BackLeft.setPower(.4);
+        BackRight.setPower(.4);
+
+        FrontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        FrontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        BackLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        BackRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        while(FrontRight.isBusy() || FrontLeft.isBusy()) {
+
+        }
 
         FrontLeft.setPower(0);
         FrontRight.setPower(0);
@@ -397,7 +403,6 @@ public class RED_CarouselAuto extends LinearOpMode{
         double halfway = calculateHalfway(target, angles.firstAngle, distance);
         telemetry.addData("calculate turn halfway: ", halfway);
         telemetry.update();
-        sleep(1000);
         beginAcceleration(turnPower, distance, turnRight);
         telemetry.addData("begin moving: ", true);
         telemetry.update();
@@ -459,7 +464,7 @@ public class RED_CarouselAuto extends LinearOpMode{
 
     public void armBack() {
         Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Arm.setTargetPosition(-350);
+        Arm.setTargetPosition(350);
         Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         Arm.setPower(0.35);
         while(Arm.isBusy()){}

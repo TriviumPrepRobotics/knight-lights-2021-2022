@@ -1,37 +1,17 @@
 package org.firstinspires.ftc.teamcode;
 
 //Normal FTC Imports
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import java.util.List;
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 
-//Hardware Imports
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 
-//Camera Vision Imports
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
-import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-
-//Sensor Data Interpretation Imports
 import org.firstinspires.ftc.robotcore.external.Func;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -39,20 +19,19 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
-import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XZY;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
-
-//Other Imports
-import java.util.ArrayList;
-import java.util.List;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.Locale;
 
-@Autonomous(name = "Tournament Red Carousel", group = "comp")
+//Hardware Imports
+//Camera Vision Imports
+//Sensor Data Interpretation Imports
+//Other Imports
+
+@Autonomous(name = "Tournament Blue Carousel", group = "comp")
 //@Disabled
-public class RED_CarouselAuto extends LinearOpMode{
+public class BLUE_CarouselAuto extends LinearOpMode{
 
     //Hardware Map
 
@@ -201,7 +180,7 @@ public class RED_CarouselAuto extends LinearOpMode{
  */
         moveForward(18);
         sleep(500);
-        Realturn(-45);
+        Realturn(45);
         moveForward(6);
         sleep(500);
         armTop();
@@ -210,7 +189,7 @@ public class RED_CarouselAuto extends LinearOpMode{
         sleep(500);
         clawOn();
         sleep(500);
-        moveBackward(6);
+        armBack();
 
     }
 
@@ -397,7 +376,6 @@ public class RED_CarouselAuto extends LinearOpMode{
         double halfway = calculateHalfway(target, angles.firstAngle, distance);
         telemetry.addData("calculate turn halfway: ", halfway);
         telemetry.update();
-        sleep(1000);
         beginAcceleration(turnPower, distance, turnRight);
         telemetry.addData("begin moving: ", true);
         telemetry.update();

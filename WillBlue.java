@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@TeleOp(name = "Blue", group = "comp")
+@TeleOp(name = "Blue TeleOp", group = "comp")
 //@Disabled
 public class WillBlue extends LinearOpMode{
 
