@@ -18,8 +18,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
 import java.util.Locale;
 
+
+//TODO:
+//2. Add slowdown code
+//3. One more thing I forgot
+
 @Autonomous
-@Disabled
+//@Disabled
 public class AAAAAAAAAAAAAAAAAAAAAa extends LinearOpMode {
 
     DcMotor FrontLeft;
@@ -80,18 +85,21 @@ public class AAAAAAAAAAAAAAAAAAAAAa extends LinearOpMode {
         //TAKES INTIIAL ANGLE GROUP AND SETS ORIGIN TO THE Z ANGLE
         angles = imu.getAngularOrientation(AxesReference.EXTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double currentPos = angles.firstAngle;
-
-        boolean turnRight = directionCheck(target, currentPos);
+        boolean turnRight;
 
             while (calculateError(target, currentPos) < acceptableErrorMargin) {
-                twiddle(target, turnRight);
+                angles = imu.getAngularOrientation(AxesReference.EXTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                currentPos = angles.firstAngle;
+                
+                turnRight = directionCheck(target, currentPos);
+                twiddle(target, currentPos, turnRight);
             }
 
     }
 
-    void twiddle(double target, boolean turnRight) {
-        angles = imu.getAngularOrientation(AxesReference.EXTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        double currentPos = angles.firstAngle;
+    void twiddle(double target, double origin, boolean turnRight) {
+
+        double currentPos = origin;
 
         double turnPower = basePower * (calculateError(target, currentPos)) + basePower;
 
@@ -100,16 +108,18 @@ public class AAAAAAAAAAAAAAAAAAAAAa extends LinearOpMode {
         BackLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BackRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        int i = 0;
+
         if (turnRight) {
             FrontLeft.setPower(turnPower);
             FrontRight.setPower(-turnPower);
             BackLeft.setPower(turnPower);
             BackRight.setPower(-turnPower);
 
-            while (!(currentPos > target)) {
+            while (!(currentPos > target) && i % 5 == 0) {
                 angles = imu.getAngularOrientation(AxesReference.EXTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                 currentPos = angles.firstAngle;
-
+                i++;
             }
 
             FrontLeft.setPower(0);
@@ -124,10 +134,10 @@ public class AAAAAAAAAAAAAAAAAAAAAa extends LinearOpMode {
             BackLeft.setPower(-turnPower);
             BackRight.setPower(turnPower);
 
-            while (!(currentPos < target)) {
+            while (!(currentPos < target) && i % 5 == 0) {
                 angles = imu.getAngularOrientation(AxesReference.EXTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                 currentPos = angles.firstAngle;
-
+                i++;
             }
 
             FrontLeft.setPower(0);
