@@ -89,31 +89,31 @@ public class WillBlue extends LinearOpMode{
          }
 
          if(gamepad1.x){
-             Arm.setTargetPosition(-450);
+             Arm.setTargetPosition(350);
              Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
              Arm.setPower(0.35);
          }
 
          if(gamepad1.dpad_up){
-             Arm.setTargetPosition(-925);
+             Arm.setTargetPosition(590);
              Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
              Arm.setPower(0.35);
          }
 
          if(gamepad1.dpad_left){
-             Arm.setTargetPosition(-1125);
+             Arm.setTargetPosition(725);
              Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
              Arm.setPower(0.35);
          }
 
          if(gamepad1.dpad_down){
-             Arm.setTargetPosition(-1245);
+             Arm.setTargetPosition(825);
              Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
              Arm.setPower(0.35);
          }
 
          if(gamepad1.b){
-             Arm.setTargetPosition(-1400);
+             Arm.setTargetPosition(900);
              Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
              Arm.setPower(0.35);
          }

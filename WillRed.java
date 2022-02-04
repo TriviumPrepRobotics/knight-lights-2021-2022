@@ -89,31 +89,31 @@ public class WillRed extends LinearOpMode{
             }
 
             if(gamepad1.x){
-                Arm.setTargetPosition(-350);
+                Arm.setTargetPosition(350);
                 Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 Arm.setPower(0.35);
             }
 
             if(gamepad1.dpad_up){
-                Arm.setTargetPosition(-920);
+                Arm.setTargetPosition(590);
                 Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 Arm.setPower(0.35);
             }
 
             if(gamepad1.dpad_left){
-                Arm.setTargetPosition(-1120);
+                Arm.setTargetPosition(725);
                 Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 Arm.setPower(0.35);
             }
 
             if(gamepad1.dpad_down){
-                Arm.setTargetPosition(-1240);
+                Arm.setTargetPosition(825);
                 Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 Arm.setPower(0.35);
             }
 
             if(gamepad1.b){
-                Arm.setTargetPosition(-1400);
+                Arm.setTargetPosition(900);
                 Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 Arm.setPower(0.35);
             }
