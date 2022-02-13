@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "Red TeleOp", group = "comp")
@@ -13,8 +14,11 @@ public class WillRed extends LinearOpMode{
     DcMotor BackLeft;
     DcMotor BackRight;
     DcMotor Duck;
-    DcMotor Arm;
-    DcMotor Claw;
+    DcMotor Slide;
+    DcMotor Intake1;
+    DcMotor Intake2;
+
+    Servo servo;
 
     double leftTriggerStartTime = 0;
     double leftBumperStartTime = 0;
@@ -29,6 +33,10 @@ public class WillRed extends LinearOpMode{
     boolean duckOn = false;
     boolean ClawOn = false;
     boolean turboMode = false;
+    boolean pickup = false;
+    boolean deliver = false;
+    boolean carry = false;
+    boolean intakeOn;
 
 
     @Override
@@ -39,30 +47,26 @@ public class WillRed extends LinearOpMode{
         BackLeft = hardwareMap.dcMotor.get("Back Left");
         BackRight = hardwareMap.dcMotor.get("Back Right");
         Duck = hardwareMap.dcMotor.get("Duck");
-        Arm = hardwareMap.dcMotor.get("Arm");
-        Claw = hardwareMap.dcMotor.get("Claw");
+        Slide = hardwareMap.dcMotor.get("Slide");
+        Intake1 = hardwareMap.dcMotor.get("Intake 1");
+        Intake2 = hardwareMap.dcMotor.get("Intake 2");
 
-        Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        Claw.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Claw.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        while(Arm.getCurrentPosition() != 0){
-            idle();
-        }
-
-        while(Claw.getCurrentPosition() != 0){
-            idle();
-        }
+        servo = hardwareMap.servo.get("servo");
 
         FrontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         FrontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BackLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         BackRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         Duck.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        Arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        Claw.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Intake1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        Intake2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        Slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        Slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        Slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        servo.setPosition(1);
 
         waitForStart();
 
@@ -88,45 +92,53 @@ public class WillRed extends LinearOpMode{
                 duckSwitch();
             }
 
-            if(gamepad1.x){
-                Arm.setTargetPosition(350);
-                Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                Arm.setPower(0.35);
-            }
-
-            if(gamepad1.dpad_up){
-                Arm.setTargetPosition(590);
-                Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                Arm.setPower(0.35);
-            }
-
-            if(gamepad1.dpad_left){
-                Arm.setTargetPosition(725);
-                Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                Arm.setPower(0.35);
-            }
-
-            if(gamepad1.dpad_down){
-                Arm.setTargetPosition(825);
-                Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                Arm.setPower(0.35);
-            }
-
             if(gamepad1.b){
-                Arm.setTargetPosition(900);
-                Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                Arm.setPower(0.35);
+                pickup = true;
+                deliver = false;
+                carry = false;
+                servo.setPosition(1);
+                Slide.setTargetPosition(0);
+                Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                Slide.setPower(1);
+                intakeOn = false;
             }
 
-            if(gamepad1.right_bumper && rightBumperCooldown()){
-                ClawOn();
+            if(gamepad1.x){
+                deliver = false;
+                pickup = false;
+                carry = true;
+                servo.setPosition(1);
+                Slide.setTargetPosition(965);
+                Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                Slide.setPower(1);
+                intakeOn = false;
             }
 
-            if(Arm.getCurrentPosition() < - 500){
-                Arm.setPower(0.15);
+            if(gamepad1.y){
+                carry = false;
+                pickup = false;
+                deliver = true;
+                servo.setPosition(0);
+                Slide.setTargetPosition(4368);
+                Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                Slide.setPower(1);
+                intakeOn = false;
+            }
+
+            if(pickup) {
+                if(gamepad1.right_bumper && rightBumperCooldown()){ intakeSwitch2(); }
+            } else if(deliver){
+                if(gamepad1.right_bumper && rightBumperCooldown()) { intakeSwitch1(); }
             } else {
-                Arm.setPower(0.35);
+                if(gamepad1.right_bumper && rightBumperCooldown()) { intakeSwitch1(); }
             }
+
+            Slide.setPower(-1);
+
+            telemetry.addData("pickup", pickup);
+            telemetry.addData("carry", carry);
+            telemetry.addData("deliver", deliver);
+            telemetry.update();
 
         }
 
@@ -205,16 +217,25 @@ public class WillRed extends LinearOpMode{
         }
     }
 
-    public void ClawOn() {
-        ClawOn = !ClawOn;
-        if(ClawOn){
-            Claw.setTargetPosition(300);
-            Claw.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            Claw.setPower(0.25);
+    public void intakeSwitch1() {
+        intakeOn = !intakeOn;
+        if(intakeOn){
+            Intake1.setPower(0.5);
+            Intake2.setPower(-0.5);
         } else {
-            Claw.setTargetPosition(0);
-            Claw.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            Claw.setPower(0.25);
+            Intake1.setPower(0);
+            Intake2.setPower(0);
+        }
+    }
+
+    public void intakeSwitch2() {
+        intakeOn = !intakeOn;
+        if(intakeOn){
+            Intake1.setPower(-0.5);
+            Intake2.setPower(0.5);
+        } else {
+            Intake1.setPower(0);
+            Intake2.setPower(0);
         }
     }
 
