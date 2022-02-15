@@ -108,7 +108,7 @@ public class WillRed extends LinearOpMode{
                 pickup = false;
                 carry = true;
                 servo.setPosition(1);
-                Slide.setTargetPosition(965);
+                Slide.setTargetPosition(940);
                 Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 Slide.setPower(1);
                 intakeOn = false;
@@ -119,7 +119,7 @@ public class WillRed extends LinearOpMode{
                 pickup = false;
                 deliver = true;
                 servo.setPosition(0);
-                Slide.setTargetPosition(4368);
+                Slide.setTargetPosition(3824);
                 Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 Slide.setPower(1);
                 intakeOn = false;

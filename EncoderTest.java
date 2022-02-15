@@ -1,13 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-@TeleOp(name = "Blue TeleOp", group = "comp")
+@TeleOp(name = "Encoder Test")
 //@Disabled
-public class WillBlue extends LinearOpMode{
+public class EncoderTest extends OpMode{
 
     DcMotor FrontLeft;
     DcMotor FrontRight;
@@ -18,7 +19,9 @@ public class WillBlue extends LinearOpMode{
     DcMotor Intake1;
     DcMotor Intake2;
 
-    Servo servo;
+
+    double ArmPos;
+    double ClawPos;
 
     double leftTriggerStartTime = 0;
     double leftBumperStartTime = 0;
@@ -28,19 +31,8 @@ public class WillBlue extends LinearOpMode{
     double yStartTime = 0;
     double aStartTime = 0;
     double xStartTime = 0;
-    double power = 0.5;
 
-    boolean duckOn = false;
-    boolean ClawOn = false;
-    boolean turboMode = false;
-    boolean pickup = false;
-    boolean deliver = false;
-    boolean carry = false;
-    boolean intakeOn = false;
-
-
-    @Override
-    public void runOpMode() throws InterruptedException{
+    public void init() {
 
         FrontLeft = hardwareMap.dcMotor.get("Front Left");
         FrontRight = hardwareMap.dcMotor.get("Front Right");
@@ -50,8 +42,6 @@ public class WillBlue extends LinearOpMode{
         Slide = hardwareMap.dcMotor.get("Slide");
         Intake1 = hardwareMap.dcMotor.get("Intake 1");
         Intake2 = hardwareMap.dcMotor.get("Intake 2");
-
-        servo = hardwareMap.servo.get("servo");
 
         FrontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         FrontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -66,80 +56,31 @@ public class WillBlue extends LinearOpMode{
 
         Slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        servo.setPosition(1);
+    }
 
-        waitForStart();
+    public void loop() {
 
-        while(opModeIsActive()){
-
-            if(gamepad1.left_bumper){
-                turboMode = !turboMode;
-            }
-
-            if (turboMode) {
-                FrontLeft.setPower(gamepad1.left_stick_y);
-                FrontRight.setPower(-gamepad1.right_stick_y);
-                BackLeft.setPower(-gamepad1.left_stick_y);
-                BackRight.setPower(gamepad1.right_stick_y);
-            } else {
-                FrontLeft.setPower(gamepad1.left_stick_y * power);
-                FrontRight.setPower(-gamepad1.right_stick_y * power);
-                BackLeft.setPower(-gamepad1.left_stick_y * power);
-                BackRight.setPower(gamepad1.right_stick_y * power);
-            }
-
-         if(gamepad1.a && aCooldown()){
-             duckSwitch();
-         }
-
-            if(gamepad1.b){
-                pickup = true;
-                deliver = false;
-                carry = false;
-                servo.setPosition(1);
-                Slide.setTargetPosition(0);
-                Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                Slide.setPower(1);
-                intakeOn = false;
-            }
-
-            if(gamepad1.x){
-                deliver = false;
-                pickup = false;
-                carry = true;
-                servo.setPosition(1);
-                Slide.setTargetPosition(940);
-                Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                Slide.setPower(1);
-                intakeOn = false;
-            }
-
-            if(gamepad1.y){
-                carry = false;
-                pickup = false;
-                deliver = true;
-                servo.setPosition(0);
-                Slide.setTargetPosition(3824);
-                Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                Slide.setPower(1);
-                intakeOn = false;
-            }
-
-            if(pickup) {
-                if(gamepad1.right_bumper && rightBumperCooldown()){ intakeSwitch2(); }
-            } else if(deliver){
-                if(gamepad1.right_bumper && rightBumperCooldown()) { intakeSwitch1(); }
-            } else {
-                if(gamepad1.right_bumper && rightBumperCooldown()) { intakeSwitch1();}
-            }
-
-            telemetry.addData("pickup", pickup);
-            telemetry.addData("carry", carry);
-            telemetry.addData("deliver", deliver);
-            telemetry.update();
-
+        if(gamepad1.y && yCooldown()){
+            Slide.setTargetPosition(Slide.getCurrentPosition() - 50);
+            Slide.setPower(1);
+            Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            while(Slide.isBusy()){}
+            Slide.setPower(0);
         }
 
+        if(gamepad1.a && aCooldown()){
+            Slide.setTargetPosition(Slide.getCurrentPosition() + 50
+            );
+            Slide.setPower(1);
+            Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            while(Slide.isBusy()){}
+            Slide.setPower(0);
+        }
+
+        ArmPos = Slide.getCurrentPosition();
+        telemetry.addData("Arm Position: ", ArmPos);
+
+        telemetry.update();
     }
 
     public boolean leftTriggerCooldown() {
@@ -206,35 +147,5 @@ public class WillBlue extends LinearOpMode{
         return false;
     }
 
-    public void duckSwitch() {
-        duckOn = !duckOn;
-        if (duckOn) {
-            Duck.setPower(0.5);
-        } else {
-            Duck.setPower(0);
-        }
-    }
-
-    public void intakeSwitch1() {
-        intakeOn = !intakeOn;
-        if(intakeOn){
-            Intake1.setPower(0.5);
-            Intake2.setPower(-0.5);
-        } else {
-            Intake1.setPower(0);
-            Intake2.setPower(0);
-        }
-    }
-
-    public void intakeSwitch2() {
-        intakeOn = !intakeOn;
-        if(intakeOn){
-            Intake1.setPower(-0.5);
-            Intake2.setPower(0.5);
-        } else {
-            Intake1.setPower(0);
-            Intake2.setPower(0);
-        }
-    }
 
 }
