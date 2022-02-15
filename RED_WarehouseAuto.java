@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.Func;
@@ -44,18 +45,25 @@ public class RED_WarehouseAuto extends LinearOpMode{
 
     //Hardware Map
 
-    DcMotor FrontRight;
     DcMotor FrontLeft;
+    DcMotor FrontRight;
     DcMotor BackLeft;
     DcMotor BackRight;
-
     DcMotor Duck;
-    DcMotor Arm;
-    DcMotor Claw;
+    DcMotor Slide;
+    DcMotor Intake1;
+    DcMotor Intake2;
+
+    Servo servo;
 
     //Booleans
     boolean duckOn = false;
-    boolean clawOn = false;
+    boolean ClawOn = false;
+    boolean turboMode = false;
+    boolean pickup = false;
+    boolean deliver = false;
+    boolean carry = false;
+    boolean intakeOn;
 
     double power = 0.5;
 
@@ -73,20 +81,26 @@ public class RED_WarehouseAuto extends LinearOpMode{
         BackLeft = hardwareMap.dcMotor.get("Back Left");
         BackRight = hardwareMap.dcMotor.get("Back Right");
         Duck = hardwareMap.dcMotor.get("Duck");
-        Arm = hardwareMap.dcMotor.get("Arm");
-        Claw = hardwareMap.dcMotor.get("Claw");
+        Slide = hardwareMap.dcMotor.get("Slide");
+        Intake1 = hardwareMap.dcMotor.get("Intake 1");
+        Intake2 = hardwareMap.dcMotor.get("Intake 2");
 
-        BackLeft.setDirection(DcMotorSimple.Direction.FORWARD);
-        BackRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        FrontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        FrontRight.setDirection(DcMotorSimple.Direction.FORWARD);
+        servo = hardwareMap.servo.get("servo");
 
-        Arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        Claw.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        FrontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        FrontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BackLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BackRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        Duck.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        Intake1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        Intake2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        Slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Claw.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
+        Slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        servo.setPosition(1);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
@@ -107,23 +121,7 @@ public class RED_WarehouseAuto extends LinearOpMode{
 
         waitForStart();
 
-        moveForward(15);
-        sleep(250);
-        turn(40);
-        sleep(250);
-        moveForward(9);
-        sleep(250);
-        armTop();
-        sleep(500);
-        clawOn();
-        sleep(250);
-        clawOn();
-        sleep(250);
-        armBack();
-        sleep(250);
-        turn(85);
-        sleep(250);
-        Speed(-72);
+
 
     }
 
@@ -373,19 +371,53 @@ public class RED_WarehouseAuto extends LinearOpMode{
         return true;
     }
 
-    public void armTop() {
-        Arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Arm.setTargetPosition(590);
-        Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        Arm.setPower(0.20);
-        while(Arm.isBusy()){}
+    public void deliver() {
+        carry = false;
+        pickup = false;
+        deliver = true;
+        servo.setPosition(0);
+        Slide.setTargetPosition(3824);
+        Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        Slide.setPower(1);
+        intakeOn = false;
     }
 
-    public void armBack() {
-        Arm.setTargetPosition(350);
-        Arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        Arm.setPower(0.20);
-        while(Arm.isBusy()){}
+    public void carry() {
+        deliver = false;
+        pickup = false;
+        carry = true;
+        servo.setPosition(1);
+        Slide.setTargetPosition(940);
+        Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        Slide.setPower(1);
+        intakeOn = false;
+    }
+
+    public void pickup() {
+        pickup = true;
+        deliver = false;
+        carry = false;
+        servo.setPosition(1);
+        Slide.setTargetPosition(0);
+        Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        Slide.setPower(1);
+        intakeOn = false;
+    }
+
+    public void output() {
+        Intake1.setPower(0.5);
+        Intake2.setPower(-0.5);
+        sleep(1000);
+        Intake1.setPower(0);
+        Intake2.setPower(0);
+    }
+
+    public void intake() {
+        Intake1.setPower(-0.5);
+        Intake2.setPower(0.5);
+        sleep(1000);
+        Intake1.setPower(0);
+        Intake2.setPower(0);
     }
 
     public void duckSwitch() {
@@ -394,19 +426,6 @@ public class RED_WarehouseAuto extends LinearOpMode{
             Duck.setPower(-0.5);
         } else {
             Duck.setPower(0);
-        }
-    }
-
-    public void clawOn() {
-        clawOn = !clawOn;
-        if(clawOn){
-            Claw.setTargetPosition(300);
-            Claw.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            Claw.setPower(0.25);
-        } else {
-            Claw.setTargetPosition(0);
-            Claw.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            Claw.setPower(0.25);
         }
     }
 
