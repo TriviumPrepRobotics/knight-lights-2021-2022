@@ -89,6 +89,9 @@ public class BLUE_CarouselAuto extends LinearOpMode{
 
         Slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
+        BackRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        FrontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
         Slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         servo.setPosition(1);
@@ -113,7 +116,29 @@ public class BLUE_CarouselAuto extends LinearOpMode{
 
         waitForStart();
 
+        carry();
+        sleep(500);
+        moveForward(18);
+        sleep(500);
+        turn(30);
+        sleep(500);
+        deliver();
+        sleep(1000);
+        moveForward(10);
+        sleep(500);
+        output();
+        sleep(1000);
+        moveBackward(6);
+        sleep(500);
+        turn(60);
+        sleep(500);
+        moveBackward(32);
+        sleep(500);
+        duckSwitch();
+        sleep(3000);
+        duckSwitch();
 
+        pickup();
 
     }
 
@@ -370,6 +395,28 @@ public class BLUE_CarouselAuto extends LinearOpMode{
         intakeOn = false;
     }
 
+    public void mid() {
+        carry = false;
+        pickup = false;
+        deliver = true;
+        servo.setPosition(0);
+        Slide.setTargetPosition(3824);
+        Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        Slide.setPower(1);
+        intakeOn = false;
+    }
+
+    public void bottom() {
+        carry = false;
+        pickup = false;
+        deliver = true;
+        servo.setPosition(0);
+        Slide.setTargetPosition(3824);
+        Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        Slide.setPower(1);
+        intakeOn = false;
+    }
+
     public void carry() {
         deliver = false;
         pickup = false;
@@ -390,6 +437,7 @@ public class BLUE_CarouselAuto extends LinearOpMode{
         Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         Slide.setPower(1);
         intakeOn = false;
+        while(Slide.isBusy()){}
     }
 
     public void output() {
