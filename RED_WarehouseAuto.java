@@ -21,8 +21,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.firstinspires.ftc.robotcore.external.Func;
@@ -72,6 +74,16 @@ public class RED_WarehouseAuto extends LinearOpMode{
     Orientation angles;
     Acceleration gravity;
 
+    private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
+    private static final String[] LABELS = {"Ball", "Cube", "Duck", "Marker"};
+
+    private static final String VUFORIA_KEY =
+            "AR/sArn/////AAABmYT4OHM7O0ghuzdm7dDNDFhZG6Yl6O3GSKrhCfuGTcO9wTvGG646aPxMUSyLSgqkS7u8oRDM8K744VEXHCOYpsfzxT7Gp/Evu8537krH3m91cimF8TITI5nvIsA9bOXSqInL1u+X0uGgU9ZA44A0Ox4nJy/2Yi7YhlPrPl9A30bgrkY+/azNr1SGVGucWZQHACG9/6NkO5KhyWL5ImeiNEsE10mIqvA9FkcC8iWA5ANwGmtsGkzgW01HgYy43BIP2zULL9Bq44vzCda7agK03HvYqgAasu3D8KSI3ecm5E+hvJiFIe62ptFx728jErgtOr5gyKV5oo8nO60x74XUXuu1kpptLjwxXHQOk0h4CHFc";
+
+    private VuforiaLocalizer vuforia;
+
+    private TFObjectDetector tfod;
+
     @Override
     public void runOpMode() throws InterruptedException{
 
@@ -117,6 +129,14 @@ public class RED_WarehouseAuto extends LinearOpMode{
 
         composeTelemetry();
 
+        initVuforia();
+        initTfod();
+
+        if (tfod != null) {
+            tfod.activate();
+            tfod.setZoom(1, 16.0/9.0);
+        }
+
         telemetry.addData(">", "Press Play to start op mode");
         telemetry.update();
 
@@ -124,26 +144,83 @@ public class RED_WarehouseAuto extends LinearOpMode{
 
         waitForStart();
 
+        //OBJECT LOCATION STATUSES
+        boolean right = false;
+        boolean left = false;
+
+        //THIS VALUE NEEDS TO BE CALIBRATED TO BE IN THE CENTER OF THE FRAME. JUST CHECK THIS WITH TFOD WHEN LOOKING AT A DUCK AND LINE THE LEFT COORDINATES OF THE DUCK WHERE WE WANT THE BOUNDARY
+        float boundary = 200;
+
+        if(tfod != null) {
+            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+            if (updatedRecognitions != null) {
+                telemetry.addData("# Object Detected", updatedRecognitions.size());
+                // step through the list of recognitions and display boundary info.
+                int i = 0;
+                for (Recognition recognition : updatedRecognitions) {
+                    telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                    telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                            recognition.getLeft(), recognition.getTop());
+                    telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                            recognition.getRight(), recognition.getBottom());
+                    i++;
+
+                    //'IF' STATEMENT CHECKS IF THE OBJECT IS ON THE RIGHT OR LEFT OF THE FRAME. DO NOT USE MORE THAN ONE DUCK WHEN TESTING.
+                    if (recognition.getLeft() < boundary) {
+                        left = true;
+                        right = false;
+                    } else if (recognition.getLeft() > boundary) {
+                        right = true;
+                        left = false;
+                    }
+                }
+            }
+        }
+
         carry();
         sleep(500);
         moveForward(18);
         sleep(500);
         turn(30);
         sleep(500);
-        deliver();
-        sleep(1000);
-        moveForward(10);
-        sleep(500);
-        output();
-        sleep(1000);
-        moveBackward(6);
-        sleep(500);
-        carry();
+
+        if(right == true) {
+            deliver();
+            sleep(1000);
+            moveForward(10);
+            sleep(500);
+            output();
+            sleep(500);
+            moveBackward(6);
+            sleep(500);
+            carry();
+        } else if(left == true){
+            mid();
+            sleep(1000);
+            moveForward(9);
+            sleep(500);
+            output();
+            sleep(500);
+            moveBackward(5);
+            sleep(500);
+            carry();
+        } else {
+            bottom();
+            sleep(500);
+            moveForward(8);
+            sleep(500);
+            output();
+            sleep(500);
+            moveBackward(4);
+            sleep(500);
+            carry();
+        }
         sleep(500);
         turn(90);
         sleep(500);
         Speed(-54);
         sleep(500);
+
         pickup();
 
     }
@@ -399,7 +476,7 @@ public class RED_WarehouseAuto extends LinearOpMode{
         pickup = false;
         deliver = true;
         servo.setPosition(0);
-        Slide.setTargetPosition(3824);
+        Slide.setTargetPosition(4050);
         Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         Slide.setPower(1);
         intakeOn = false;
@@ -410,7 +487,7 @@ public class RED_WarehouseAuto extends LinearOpMode{
         pickup = false;
         deliver = true;
         servo.setPosition(0);
-        Slide.setTargetPosition(3824);
+        Slide.setTargetPosition(2631);
         Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         Slide.setPower(1);
         intakeOn = false;
@@ -420,8 +497,8 @@ public class RED_WarehouseAuto extends LinearOpMode{
         carry = false;
         pickup = false;
         deliver = true;
-        servo.setPosition(0);
-        Slide.setTargetPosition(3824);
+        servo.setPosition(1);
+        Slide.setTargetPosition(994);
         Slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         Slide.setPower(1);
         intakeOn = false;
@@ -532,6 +609,32 @@ public class RED_WarehouseAuto extends LinearOpMode{
                                         + gravity.zAccel*gravity.zAccel));
                     }
                 });
+    }
+
+    private void initVuforia() {
+        /*
+         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
+         */
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam");
+
+        //  Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+
+        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
+    }
+
+    private void initTfod() {
+        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minResultConfidence = 0.65f;
+        tfodParameters.isModelTensorFlow2 = true;
+        tfodParameters.inputSize = 320;
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
     }
 
     //----------------------------------------------------------------------------------------------
