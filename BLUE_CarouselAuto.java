@@ -157,11 +157,12 @@ public class BLUE_CarouselAuto extends LinearOpMode{
                             recognition.getRight(), recognition.getBottom());
                     i++;
 
+                    String duckstring = recognition.getLabel();
                     //'IF' STATEMENT CHECKS IF THE OBJECT IS ON THE RIGHT OR LEFT OF THE FRAME. DO NOT USE MORE THAN ONE DUCK WHEN TESTING.
-                    if (recognition.getLeft() < boundary) {
+                    if (duckstring.equalsIgnoreCase("Duck") && recognition.getLeft() < boundary) {
                         left = true;
                         right = false;
-                    } else if (recognition.getLeft() > boundary) {
+                    } else if (duckstring.equalsIgnoreCase("Duck") && recognition.getLeft() > boundary) {
                         right = true;
                         left = false;
                     }
